@@ -8,7 +8,7 @@
 - **One file per component.** No file exports more than one component.
 - **CamelCase filenames** matching the default export (e.g., `Navbar.tsx` → `Navbar`).
 - **Types/interfaces** live in `src/types/`, imported as `@/types`.
-- **Icons** live in `src/components/icons/` — one file per icon, exported via barrel `index.ts`.
+- **Icons** live in `shared/src/icons/` — one file per icon, exported via barrel `index.ts`.
 - **Icon components** default to `aria-hidden="true"` and accept an optional `title` prop. When `title` is provided, set `role="img"` and render `<title>` inside the SVG.
 - **Relative imports** for sibling components (`./NodeBackground`). **Absolute `@/` imports** for cross-directory references (`@/components/icons`, `@/types`).
 - **No missing htmlFor attributes** on form labels. Always use `htmlFor` to associate labels with inputs.

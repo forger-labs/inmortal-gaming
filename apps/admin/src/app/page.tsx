@@ -1,9 +1,11 @@
+import Image from "next/image";
+
 import { RecentTransmissions } from "@/components/admin/RecentTransmissions";
 import { SalesVolumeChart } from "@/components/admin/SalesVolumeChart";
 import { StatsCards } from "@/components/admin/StatsCards";
 import { SystemOverviewHeader } from "@/components/admin/SystemOverviewHeader";
 
-export default function AdminDashboardPage() {
+export default function Home() {
   return (
     <div>
       <SystemOverviewHeader />
