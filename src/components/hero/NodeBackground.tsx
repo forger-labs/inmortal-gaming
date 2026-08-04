@@ -15,7 +15,7 @@ const NODE_COUNT = 50;
 const CONNECTION_DIST = 150;
 const SPEED = 0.3;
 
-export default function NodeBackground() {
+export function NodeBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {

@@ -1,5 +1,8 @@
 # Inmortal Gaming — Project Rules
 
+## Mandatory skill to design
+- **Impeccable**: All visual design work must be done using impeccable.
+
 ## Component Conventions
 
 - **One file per component.** No file exports more than one component.
@@ -8,6 +11,14 @@
 - **Icons** live in `src/components/icons/` — one file per icon, exported via barrel `index.ts`.
 - **Icon components** default to `aria-hidden="true"` and accept an optional `title` prop. When `title` is provided, set `role="img"` and render `<title>` inside the SVG.
 - **Relative imports** for sibling components (`./NodeBackground`). **Absolute `@/` imports** for cross-directory references (`@/components/icons`, `@/types`).
+- **No missing htmlFor attributes** on form labels. Always use `htmlFor` to associate labels with inputs.
+- **No missing alt attributes** on images. Always provide meaningful `alt` text for `<Image>` components.
+- **No recreate of components** that already exist. Reuse existing components instead of creating duplicates.
+- **Use sileo toasts** for notifications instead of `alert()` or `console.log()`.
+- **No accent for text**. All text should be in neutral Spanish, avoiding regionalisms or slang.
+- **Use Yup for form validation**. All forms should use Yup for validation schemas.
+- **Use Formik for forms**. All forms should be built using Formik for state management and validation.
+- **Always use Link**. All anchor tags should be replaced by Link component from NextJS.
 
 ## Naming
 
@@ -87,3 +98,19 @@ Substantial changes follow Spec-Driven Development:
 - Screens are uploaded via `stitch_upload_design_md` (markdown specs).
 - Generative tools (`generate_screen_from_text`, `edit_screens`, `update_design_system`) require OAuth 2.0 — not available with API key alone.
 - DESIGN.md is the source of truth for visual design specs.
+
+<!-- CODEGRAPH_START -->
+## CodeGraph
+
+In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
+
+- **MCP tool** (when available): `codegraph_explore` answers most code questions in one call — the relevant symbols' verbatim source plus the call paths between them, including dynamic-dispatch hops grep can't follow. Name a file or symbol in the query to read its current line-numbered source. If it's listed but deferred, load it by name via tool search.
+- **Shell** (always works): `codegraph explore "<symbol names or question>"` prints the same output.
+
+If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
+<!-- CODEGRAPH_END -->
+
+
+## Check code
+To check code always use: 
+- pnpm format && pnpm build

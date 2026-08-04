@@ -2,7 +2,7 @@ interface WhatsAppIconProps extends React.SVGProps<SVGSVGElement> {
   title?: string;
 }
 
-export default function WhatsAppIcon({ title, ...props }: WhatsAppIconProps) {
+export function WhatsAppIcon({ title, ...props }: WhatsAppIconProps) {
   return (
     <svg
       aria-hidden={title ? undefined : true}

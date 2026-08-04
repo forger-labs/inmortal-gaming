@@ -2,10 +2,7 @@ interface ChevronDownIconProps extends React.SVGProps<SVGSVGElement> {
   title?: string;
 }
 
-export default function ChevronDownIcon({
-  title,
-  ...props
-}: ChevronDownIconProps) {
+export function ChevronDownIcon({ title, ...props }: ChevronDownIconProps) {
   return (
     <svg
       aria-hidden={title ? undefined : true}

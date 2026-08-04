@@ -2,7 +2,7 @@ interface CloseIconProps extends React.SVGProps<SVGSVGElement> {
   title?: string;
 }
 
-export default function CloseIcon({ title, ...props }: CloseIconProps) {
+export function CloseIcon({ title, ...props }: CloseIconProps) {
   return (
     <svg
       aria-hidden={title ? undefined : true}

@@ -2,7 +2,7 @@ interface MenuIconProps extends React.SVGProps<SVGSVGElement> {
   title?: string;
 }
 
-export default function MenuIcon({ title, ...props }: MenuIconProps) {
+export function MenuIcon({ title, ...props }: MenuIconProps) {
   return (
     <svg
       aria-hidden={title ? undefined : true}

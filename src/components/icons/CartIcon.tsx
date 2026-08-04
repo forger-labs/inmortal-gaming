@@ -2,7 +2,7 @@ interface CartIconProps extends React.SVGProps<SVGSVGElement> {
   title?: string;
 }
 
-export default function CartIcon({ title, ...props }: CartIconProps) {
+export function CartIcon({ title, ...props }: CartIconProps) {
   return (
     <svg
       aria-hidden={title ? undefined : true}
