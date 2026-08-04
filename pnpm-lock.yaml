@@ -17,6 +17,9 @@ importers:
 
   apps/admin:
     dependencies:
+      '@inmortal/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       formik:
         specifier: ^2.4.9
         version: 2.4.9(@types/react@19.2.18)(react@19.2.8)
@@ -57,6 +60,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@inmortal/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       embla-carousel-autoplay:
         specifier: ^8.6.0
         version: 8.6.0(embla-carousel@8.6.0)
