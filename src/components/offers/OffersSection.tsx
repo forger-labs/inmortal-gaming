@@ -32,7 +32,7 @@ function OfferCard({
 }: (typeof OFFERS)[number]) {
   return (
     <article
-      className={`relative overflow-hidden rounded-lg border p-6 transition-all duration-200 hover:-translate-y-1 ${
+      className={`relative overflow-hidden rounded-lg cursor-pointer border p-6 transition-all duration-200 hover:-translate-y-1 ${
         color === "neon-primary"
           ? "border-neon-primary/30 bg-neon-primary/[0.04] shadow-[0_0_20px_-8px] shadow-neon-primary"
           : color === "neon-purple"
@@ -51,9 +51,9 @@ function OfferCard({
         }`}
       />
 
-      <h3 className="mb-2 font-display text-base font-semibold text-text-primary">
+      <h5 className="mb-2 font-display text-base font-semibold text-text-primary">
         {title}
-      </h3>
+      </h5>
       <p className="mb-4 font-body text-sm leading-relaxed text-text-secondary">
         {description}
       </p>

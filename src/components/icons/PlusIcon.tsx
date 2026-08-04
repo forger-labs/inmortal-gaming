@@ -14,11 +14,7 @@ export function PlusIcon({ title, ...props }: PlusIconProps) {
       {...props}
     >
       {title && <title>{title}</title>}
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 5v14m7-7H5"
-      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5" />
     </svg>
   );
 }

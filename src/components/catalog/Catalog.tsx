@@ -4,14 +4,11 @@ import { PRODUCTS } from "@/data/products";
 import { CatalogPagination } from "./CatalogPagination";
 import { CatalogToolbar } from "./CatalogToolbar";
 import { Filters } from "./Filters";
-import { LandingHero } from "./LandingHero";
 import { ProductCard } from "./ProductCard";
 
 export function Catalog() {
   return (
     <section id="catalogo">
-      <LandingHero />
-
       <div className="grid grid-cols-1 gap-6 md:grid-cols-12 mb-13">
         {/* Sidebar filters */}
         <div className="md:col-span-3 lg:col-span-2">

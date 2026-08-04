@@ -31,7 +31,10 @@ export function RecentTransmissions() {
           </thead>
           <tbody>
             {RECENT_TRANSMISSIONS.map((row) => (
-              <tr key={row.id} className="border-b border-[#ffffff08] last:border-b-0">
+              <tr
+                key={row.id}
+                className="border-b border-[#ffffff08] last:border-b-0"
+              >
                 <td className="py-3 pr-4 font-mono text-sm text-neon-primary">
                   {row.id}
                 </td>

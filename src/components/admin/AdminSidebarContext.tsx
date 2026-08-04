@@ -30,9 +30,7 @@ export function AdminSidebarProvider({ children }: { children: ReactNode }) {
 export function useAdminSidebar() {
   const context = useContext(AdminSidebarContext);
   if (!context) {
-    throw new Error(
-      "useAdminSidebar must be used within AdminSidebarProvider",
-    );
+    throw new Error("useAdminSidebar must be used within AdminSidebarProvider");
   }
   return context;
 }

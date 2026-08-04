@@ -18,7 +18,10 @@ export function LoginForm() {
         </header>
 
         {/* Form */}
-        <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={(e) => e.preventDefault()}
+        >
           {/* Email */}
           <div className="flex flex-col gap-1">
             <label

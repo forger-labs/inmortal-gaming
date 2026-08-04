@@ -2,7 +2,10 @@ interface PendingActionsIconProps extends React.SVGProps<SVGSVGElement> {
   title?: string;
 }
 
-export function PendingActionsIcon({ title, ...props }: PendingActionsIconProps) {
+export function PendingActionsIcon({
+  title,
+  ...props
+}: PendingActionsIconProps) {
   return (
     <svg
       aria-hidden={title ? undefined : true}
