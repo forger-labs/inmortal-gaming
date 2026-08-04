@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { WhatsAppIcon } from "@/components/icons";
+import { WhatsAppIcon } from "@shared/icons";
 
 export function Footer() {
   return (

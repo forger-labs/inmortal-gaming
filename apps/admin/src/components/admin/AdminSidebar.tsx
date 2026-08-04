@@ -11,7 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import type { AdminNavLink } from "@/types";
+import type { AdminNavLink } from "@shared/types";
 import { useAdminSidebar } from "./AdminSidebarContext";
 
 const ADMIN_LINKS: AdminNavLink[] = [

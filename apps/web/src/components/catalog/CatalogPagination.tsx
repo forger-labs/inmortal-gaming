@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons";
+import { ChevronLeftIcon, ChevronRightIcon } from "@shared/icons";
 
 const PAGES = [1, 2, 3];
 

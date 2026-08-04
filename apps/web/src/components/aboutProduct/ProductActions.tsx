@@ -1,4 +1,4 @@
-import { CartIcon, WhatsAppIcon } from "@/components/icons";
+import { CartIcon, WhatsAppIcon } from "@shared/icons";
 
 export function ProductActions() {
   return (

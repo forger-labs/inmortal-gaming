@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { CartIcon, CloseIcon, MenuIcon } from "@/components/icons";
+import { CartIcon, CloseIcon, MenuIcon } from "@shared/icons";
 import type { NavLink } from "@/types";
 
 const NAV_LINKS: NavLink[] = [

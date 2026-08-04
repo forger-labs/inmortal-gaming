@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { CartIcon } from "@/components/icons";
+import { CartIcon } from "@shared/icons";
 import type { ProductDisplay } from "@/types";
 
 const STOCK_STYLES: Record<

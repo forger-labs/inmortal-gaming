@@ -5,8 +5,8 @@ import useEmblaCarousel from "embla-carousel-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { ChevronLeftIcon } from "@/components/icons/ChevronLeftIcon";
-import { ChevronRightIcon } from "@/components/icons/ChevronRightIcon";
+import { ChevronLeftIcon } from "@shared/icons";
+import { ChevronRightIcon } from "@shared/icons";
 import type { ProductSliderProps } from "@/types";
 import { ProductCard } from "./ProductCard";
 

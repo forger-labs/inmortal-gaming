@@ -1,6 +1,6 @@
 "use client";
 
-import { DeleteIcon } from "@/components/icons";
+import { DeleteIcon } from "@shared/icons";
 import { MOCK_CART } from "@/data/cart";
 
 import { CartItem } from "./CartItem";

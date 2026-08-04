@@ -1,4 +1,4 @@
-import type { AdminSalesBar, AdminStatCard, AdminTransmission } from "@/types";
+import type { AdminSalesBar, AdminStatCard, AdminTransmission } from "../types";
 
 export const ADMIN_STAT_DATA: AdminStatCard[] = [
   {

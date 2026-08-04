@@ -1,4 +1,4 @@
-import { BoltIcon, MemoryIcon, ShieldCheckIcon } from "@/components/icons";
+import { BoltIcon, MemoryIcon, ShieldCheckIcon } from "@shared/icons";
 
 const SPECS = [
   {

@@ -1,4 +1,4 @@
-import { WhatsAppIcon } from "@/components/icons";
+import { WhatsAppIcon } from "@shared/icons";
 
 export function CartSummary() {
   const subtotal = 319.49;

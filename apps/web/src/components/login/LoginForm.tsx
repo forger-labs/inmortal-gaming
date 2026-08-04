@@ -1,6 +1,6 @@
 "use client";
 
-import { BoltIcon, EmailIcon, LockIcon } from "@/components/icons";
+import { BoltIcon, EmailIcon, LockIcon } from "@shared/icons";
 
 export function LoginForm() {
   return (

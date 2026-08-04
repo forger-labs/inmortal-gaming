@@ -1,6 +1,6 @@
 "use client";
 
-import { MenuIcon, SearchIcon } from "@/components/icons";
+import { MenuIcon, SearchIcon } from "@shared/icons";
 import { useAdminSidebar } from "./AdminSidebarContext";
 
 export function SystemOverviewHeader() {

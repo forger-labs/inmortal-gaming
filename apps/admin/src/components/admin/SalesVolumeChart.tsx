@@ -1,6 +1,6 @@
 "use client";
 
-import { SALES_DATA } from "@/mocks/admin";
+import { SALES_DATA } from "@shared/mocks/admin";
 
 export function SalesVolumeChart() {
   return (

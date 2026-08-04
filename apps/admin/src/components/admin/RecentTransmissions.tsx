@@ -1,5 +1,5 @@
-import { RECENT_TRANSMISSIONS } from "@/mocks/admin";
-import type { AdminTransmission } from "@/types";
+import { RECENT_TRANSMISSIONS } from "@shared/mocks/admin";
+import type { AdminTransmission } from "@shared/types";
 
 const STATUS_STYLES: Record<AdminTransmission["status"], string> = {
   Complete: "bg-neon-green/10 text-neon-green",

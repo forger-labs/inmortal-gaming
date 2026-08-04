@@ -3,9 +3,9 @@ import {
   PendingActionsIcon,
   UsersIcon,
   WalletIcon,
-} from "@/components/icons";
-import { ADMIN_STAT_DATA } from "@/mocks/admin";
-import type { AdminStatCard, AdminStatTone } from "@/types";
+} from "@shared/icons";
+import { ADMIN_STAT_DATA } from "@shared/mocks/admin";
+import type { AdminStatCard, AdminStatTone } from "@shared/types";
 
 function CardIcon({ icon }: { icon: AdminStatCard["icon"] }) {
   const className = "h-6 w-6 text-neon-primary";

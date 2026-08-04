@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-import { DeleteIcon, MinusIcon, PlusIcon } from "@/components/icons";
+import { DeleteIcon, MinusIcon, PlusIcon } from "@shared/icons";
 import type { CartEntry } from "@/data/cart";
 import type { ProductDisplay } from "@/types";
 

@@ -1,3 +1,1 @@
-export interface SharedTypes {
-  example: string
-}
+export * from "./admin";

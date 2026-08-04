@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from "@/components/icons";
+import { ChevronDownIcon } from "@shared/icons";
 
 const OFFERS = [
   {
