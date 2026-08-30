@@ -1,7 +1,7 @@
+import { CartIcon } from "@shared/icons";
 import Image from "next/image";
 import Link from "next/link";
 
-import { CartIcon } from "@shared/icons";
 import type { ProductDisplay } from "@/types";
 
 const STOCK_STYLES: Record<
@@ -9,15 +9,15 @@ const STOCK_STYLES: Record<
   { label: string; classes: string }
 > = {
   available: {
-    label: "In Stock",
+    label: "Disponible",
     classes: "border-neon-green text-neon-green bg-neon-green/10",
   },
   low: {
-    label: "Low Stock",
+    label: "Poco stock",
     classes: "border-neon-amber text-neon-amber bg-neon-amber/10",
   },
   "out-of-stock": {
-    label: "Out of Stock",
+    label: "Agotado",
     classes: "border-text-muted text-text-muted bg-bg-surface-hover",
   },
 };
@@ -88,7 +88,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Bottom: price + cart */}
         <div className="mt-auto flex items-center justify-between border-t border-border-subtle pt-4">
           <span className="font-mono text-xl font-bold text-neon-primary">
-            ¤ {product.price.toFixed(2)}
+            $ {product.price.toFixed(2)}
           </span>
 
           <button

@@ -5,11 +5,11 @@ const PAGES = [1, 2, 3];
 export function CatalogPagination() {
   return (
     <div className="mt-8 flex items-center justify-center gap-2">
-      {/* Previous */}
+      {/* Página anterior */}
       <button
         type="button"
         className="flex h-10 w-10 items-center justify-center rounded border border-border-subtle bg-bg-surface text-text-secondary transition-colors hover:border-neon-primary hover:text-neon-primary"
-        aria-label="Previous page"
+        aria-label="Página anterior"
       >
         <ChevronLeftIcon className="h-5 w-5" />
       </button>
@@ -29,11 +29,11 @@ export function CatalogPagination() {
         </button>
       ))}
 
-      {/* Next */}
+      {/* Página siguiente */}
       <button
         type="button"
         className="flex h-10 w-10 items-center justify-center rounded border border-border-subtle bg-bg-surface text-text-secondary transition-colors hover:border-neon-primary hover:text-neon-primary"
-        aria-label="Next page"
+        aria-label="Página siguiente"
       >
         <ChevronRightIcon className="h-5 w-5" />
       </button>

@@ -17,3 +17,5 @@ export interface AuthContextValue {
   login: (email: string) => void;
   logout: () => void;
 }
+
+export type CatalogSort = "relevance" | "price-asc" | "price-desc";

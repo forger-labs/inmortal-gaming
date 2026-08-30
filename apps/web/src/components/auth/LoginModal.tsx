@@ -7,14 +7,13 @@ import { useEffect, useRef } from "react";
 import { sileo } from "sileo";
 import * as yup from "yup";
 
+import { EASE_OUT_EXPO } from "@/constants";
 import { useAuth } from "@/context/AuthContext";
 
 interface LoginModalProps {
   open: boolean;
   onClose: () => void;
 }
-
-const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const loginSchema = yup.object({
   email: yup
