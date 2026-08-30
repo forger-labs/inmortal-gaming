@@ -8,7 +8,7 @@ export function ProductInfo() {
 
       {/* Subtitle */}
       <p className="font-mono text-sm text-neon-primary mb-6 opacity-80">
-        ID: NX-8923-DELTA // SYS: OPERATIONAL
+        ID: NX-8923-DELTA {"//"} SYS: OPERATIONAL
       </p>
 
       {/* Price + original price */}

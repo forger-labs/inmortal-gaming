@@ -1,6 +1,7 @@
 "use client";
 
 import { MenuIcon, SearchIcon } from "@shared/icons";
+
 import { useAdminSidebar } from "./AdminSidebarContext";
 
 export function SystemOverviewHeader() {
@@ -24,7 +25,7 @@ export function SystemOverviewHeader() {
           System Overview
         </h1>
         <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-neon-primary">
-          DATA_STREAM :: LIVE // SYNC_STATUS: STABLE
+          DATA_STREAM :: LIVE {"//"} SYNC_STATUS: STABLE
         </p>
       </div>
 

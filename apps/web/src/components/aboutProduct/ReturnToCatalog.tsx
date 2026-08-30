@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ChevronLeftIcon } from "@shared/icons";
+import Link from "next/link";
 
 export function ReturnToCatalog() {
   return (
