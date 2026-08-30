@@ -1,12 +1,12 @@
 "use client";
 
+import { ChevronLeftIcon, ChevronRightIcon } from "@shared/icons";
 import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 
-import { ChevronLeftIcon } from "@shared/icons";
-import { ChevronRightIcon } from "@shared/icons";
 import type { ProductSliderProps } from "@/types";
 import { ProductCard } from "./ProductCard";
 
@@ -18,7 +18,7 @@ export function ProductSlider({
   products,
 }: ProductSliderProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, slidesToScroll: 1 },
+    { loop: true, slidesToScroll: 1, dragFree: true },
     [Autoplay({ playOnInit: true, stopOnInteraction: false })],
   );
 
@@ -92,10 +92,11 @@ export function ProductSlider({
       {/* Viewport */}
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex touch-pan-y">
-          {products.map((product) => (
+          {products.map((product, index) => (
             <div
               key={product.id}
-              className="min-w-0 shrink-0 grow-0 basis-full pr-4 sm:basis-1/2 lg:basis-1/3"
+              style={{ "--i": index } as CSSProperties}
+              className="card-in min-w-0 shrink-0 grow-0 basis-full pr-4 sm:basis-1/2 lg:basis-1/3"
             >
               <ProductCard product={product} />
             </div>

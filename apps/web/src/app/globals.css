@@ -26,6 +26,11 @@
   /* Borders */
   --border-subtle: rgba(255, 255, 255, 0.06);
   --border-neon: rgba(0, 240, 255, 0.3);
+
+  /* Motion easing */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @theme inline {
@@ -284,6 +289,41 @@ body {
     0 0 21px var(--neon-primary);
 }
 
+/* ─── Entrance motion (hero + list choreography) ─── */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: none;
+  }
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.7s var(--ease-out-expo) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+.card-in {
+  animation: card-in 0.5s var(--ease-out-quint) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
 /* ─── Reduced motion ─── */
 @media (prefers-reduced-motion: reduce) {
   .glitch::before,
@@ -304,6 +344,10 @@ body {
   }
   .btn-neon-primary:hover {
     transform: none;
+  }
+  .rise-in,
+  .card-in {
+    animation: none;
   }
 }
 
@@ -331,4 +375,10 @@ body {
   50% {
     box-shadow: -4px 0 25px -2px rgba(0, 240, 255, 0.8);
   }
+}
+
+/* ─── Z-index layering ─── */
+/* navbar (z-50) < login modal (z-[60]) < toasts */
+body [data-sileo-viewport] {
+  z-index: 80;
 }

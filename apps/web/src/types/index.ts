@@ -10,3 +10,10 @@ export interface CartItem {
   productId: string;
   quantity: number;
 }
+
+export interface AuthContextValue {
+  isAuthenticated: boolean;
+  email: string | null;
+  login: (email: string) => void;
+  logout: () => void;
+}

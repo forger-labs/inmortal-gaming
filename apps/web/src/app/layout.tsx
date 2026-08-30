@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { Toaster } from "sileo";
 import "./globals.css";
-import { Navbar } from "@/components/navbar/Navbar";
+
 import { Footer } from "@/components/footer/Footer";
+import { Navbar } from "@/components/navbar/Navbar";
+import { AuthProvider } from "@/context/AuthContext";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
@@ -47,10 +50,13 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col antialiased bg-bg-primary text-text-primary font-body">
-        <Navbar />
+        <AuthProvider>
+          <Navbar />
 
-        {children}
-        <Footer />
+          {children}
+          <Footer />
+          <Toaster theme="dark" position="top-center" />
+        </AuthProvider>
       </body>
     </html>
   );
