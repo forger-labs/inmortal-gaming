@@ -8,11 +8,14 @@ import type {
   CategoryEntity,
   CreateAdminDTO,
   CreateCategoryDTO,
+  CreateSubcategoryDTO,
   LoginDTO,
   PaginatedResult,
   RefreshTokenDTO,
+  SubcategoryEntity,
   UpdateAdminDTO,
   UpdateCategoryDTO,
+  UpdateSubcategoryDTO,
 } from "@shared/types";
 import axios from "axios";
 
@@ -451,6 +454,210 @@ export default class AdminApi {
       }
 
       return data ?? { message: "Categoría eliminada exitosamente" };
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista paginada de subcategorías (`GET /subcategories`).
+   */
+  async getSubcategories(
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResult<SubcategoryEntity>> {
+    const result: ApiResponse<PaginatedResult<SubcategoryEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/subcategories?page=${page}&limit=${limit}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<SubcategoryEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener subcategorías";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene una subcategoría por su identificador (`GET /subcategories/:id`).
+   */
+  async getSubcategoryById(id: number | string): Promise<SubcategoryEntity> {
+    const result: ApiResponse<SubcategoryEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/subcategories/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<SubcategoryEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener la subcategoría";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene una subcategoría por su nombre (`GET /subcategories/name/:name`).
+   */
+  async getSubcategoryByName(name: string): Promise<SubcategoryEntity> {
+    const result: ApiResponse<SubcategoryEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/subcategories/name/${encodeURIComponent(name)}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<SubcategoryEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener la subcategoría por nombre";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Crea una nueva subcategoría (`POST /subcategories`).
+   */
+  async createSubcategory(
+    dto: CreateSubcategoryDTO,
+  ): Promise<SubcategoryEntity> {
+    const result: ApiResponse<SubcategoryEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.post<CreateSubcategoryDTO>({
+        url: "/subcategories",
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<SubcategoryEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al crear la subcategoría";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza una subcategoría existente (`PUT /subcategories/:id`).
+   */
+  async updateSubcategory(
+    id: number | string,
+    dto: UpdateSubcategoryDTO,
+  ): Promise<SubcategoryEntity> {
+    const result: ApiResponse<SubcategoryEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.put({
+        url: `/subcategories/${id}`,
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<SubcategoryEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al actualizar la subcategoría";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina una subcategoría (`DELETE /subcategories/:id`).
+   */
+  async deleteSubcategory(id: number | string): Promise<{ message: string }> {
+    const result: ApiResponse<{ message: string }> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.delete({
+        url: `/subcategories/${id}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<{
+        message: string;
+      }>;
+      if (!success) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al eliminar la subcategoría";
+        throw new Error(errorMessage);
+      }
+
+      return data ?? { message: "Subcategoría eliminada exitosamente" };
     } catch (error) {
       handleApiError(error, result);
       throw error;
