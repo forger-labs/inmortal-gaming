@@ -8,13 +8,13 @@ import type {
   AdminUserFormValues,
 } from "@shared/types";
 import { useState } from "react";
-import { sileo } from "sileo";
 
 import { RequireRole } from "@/components/admin/RequireRole";
 import { UsersFilterBar } from "@/components/admin/UsersFilterBar";
 import { UsersPagination } from "@/components/admin/UsersPagination";
 import { UserFormModal } from "@/components/admin/users/UserFormModal";
 import { UsersTable } from "@/components/admin/users/UsersTable";
+import { cyberSuccess } from "@/components/toasts/cyberToasts";
 
 const PAGE_SIZE = 8;
 
@@ -87,11 +87,9 @@ export default function AdminUsersPage() {
           status: values.status,
         },
       ]);
-      sileo.success({
-        title: "Usuario creado",
-        description: `@${values.username.trim()} se agregó al sistema.`,
-        position: "top-center",
-      });
+      cyberSuccess(
+        `Usuario creado. @${values.username.trim()} se agrego al sistema.`,
+      );
     } else if (modal.user) {
       setUsers((prev) =>
         prev.map((user) =>
@@ -107,11 +105,9 @@ export default function AdminUsersPage() {
             : user,
         ),
       );
-      sileo.success({
-        title: "Usuario actualizado",
-        description: `Se guardaron los cambios de @${values.username.trim()}.`,
-        position: "top-center",
-      });
+      cyberSuccess(
+        `Usuario actualizado. Se guardaron los cambios de @${values.username.trim()}.`,
+      );
     }
 
     setModal(CLOSED_MODAL);
@@ -120,35 +116,19 @@ export default function AdminUsersPage() {
   const handleToggleStatus = (user: AdminUser) => {
     const activating = user.status === "inactive";
 
-    // Doble permiso: el toast de acción exige confirmación explícita.
-    const toastId = sileo.action({
-      title: activating ? "Activar usuario" : "Desactivar usuario",
-      description: activating
-        ? `¿Reactivar a ${user.name} ${user.lastname} (@${user.username})? Restablece su acceso al panel.`
-        : `¿Desactivar a ${user.name} ${user.lastname} (@${user.username})? Esta acción revoca su acceso al panel.`,
-      button: {
-        title: "Confirmar",
-        onClick: () => {
-          sileo.dismiss(toastId);
-          setUsers((prev) =>
-            prev.map((item) =>
-              item.id === user.id
-                ? { ...item, status: activating ? "active" : "inactive" }
-                : item,
-            ),
-          );
-          sileo.success({
-            title: activating ? "Usuario activado" : "Usuario desactivado",
-            description: activating
-              ? `@${user.username} puede acceder al panel.`
-              : `@${user.username} ya no puede acceder al panel.`,
-            position: "top-center",
-          });
-        },
-      },
-      position: "top-center",
-      duration: null,
-    });
+    setUsers((prev) =>
+      prev.map((item) =>
+        item.id === user.id
+          ? { ...item, status: activating ? "active" : "inactive" }
+          : item,
+      ),
+    );
+
+    cyberSuccess(
+      activating
+        ? `Usuario activado. @${user.username} puede acceder al panel.`
+        : `Usuario desactivado. @${user.username} ya no puede acceder al panel.`,
+    );
   };
 
   return (

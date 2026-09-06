@@ -18,18 +18,18 @@ interface LoginModalProps {
 const loginSchema = yup.object({
   email: yup
     .string()
-    .email("Ingresa un correo válido")
-    .required("Ingresa tu correo electrónico"),
+    .email("Ingresa un correo valido")
+    .required("Ingresa tu correo electronico"),
   password: yup
     .string()
-    .min(6, "La contraseña debe tener al menos 6 caracteres")
-    .required("Ingresa tu contraseña"),
+    .min(6, "La contrasena debe tener al menos 6 caracteres")
+    .required("Ingresa tu contrasena"),
 });
 
 function notifySoon() {
   sileo.info({
     title: "Disponible pronto",
-    description: "Esta función estará disponible próximamente.",
+    description: "Esta funcion estara disponible proximamente.",
     position: "top-center",
   });
 }
@@ -41,15 +41,27 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
   const formik = useFormik({
     initialValues: { email: "", password: "" },
     validationSchema: loginSchema,
-    onSubmit: (values, { resetForm }) => {
-      login(values.email);
-      resetForm();
-      onClose();
-      sileo.success({
-        title: "Sesión iniciada",
-        description: `Bienvenido, ${values.email}`,
-        position: "top-center",
-      });
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
+      try {
+        await login(values.email, values.password);
+        resetForm();
+        onClose();
+        sileo.success({
+          title: "Sesion iniciada",
+          description: `Bienvenido, ${values.email}`,
+          position: "top-center",
+        });
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Error al iniciar sesion";
+        sileo.error({
+          title: "Error de autenticacion",
+          description: message,
+          position: "top-center",
+        });
+      } finally {
+        setSubmitting(false);
+      }
     },
   });
 
@@ -126,7 +138,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
                   id="login-title"
                   className="font-display text-2xl font-bold text-text-primary"
                 >
-                  Inicia sesión
+                  Inicia sesion
                 </h2>
               </header>
 
@@ -142,7 +154,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
                     className="flex items-center gap-2 font-mono text-[13px] font-semibold uppercase text-neon-primary/80"
                   >
                     <EmailIcon className="h-4 w-4" />
-                    Correo electrónico
+                    Correo electronico
                   </label>
                   <input
                     id="login-email"
@@ -182,14 +194,14 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
                     className="flex items-center gap-2 font-mono text-[13px] font-semibold uppercase text-neon-primary/80"
                   >
                     <LockIcon className="h-4 w-4" />
-                    Contraseña
+                    Contrasena
                   </label>
                   <input
                     id="login-password"
                     name="password"
                     type="password"
                     autoComplete="current-password"
-                    placeholder="Tu contraseña"
+                    placeholder="Tu contrasena"
                     value={formik.values.password}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -218,11 +230,12 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
                 {/* Submit */}
                 <motion.button
                   type="submit"
+                  disabled={formik.isSubmitting}
                   whileTap={{ scale: 0.98 }}
-                  className="mt-2 flex w-full items-center cursor-pointer justify-center gap-2 rounded bg-neon-primary py-4 font-display text-sm font-semibold uppercase tracking-widest text-bg-primary transition-shadow hover:shadow-[0_0_20px_rgba(0,240,255,0.4)]"
+                  className="mt-2 flex w-full items-center cursor-pointer justify-center gap-2 rounded bg-neon-primary py-4 font-display text-sm font-semibold uppercase tracking-widest text-bg-primary transition-shadow hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] disabled:opacity-60"
                 >
-                  Iniciar sesión
-                  <BoltIcon className="h-5 w-5" />
+                  {formik.isSubmitting ? "Verificando…" : "Iniciar sesion"}
+                  {!formik.isSubmitting && <BoltIcon className="h-5 w-5" />}
                 </motion.button>
               </form>
 
@@ -233,7 +246,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
                   onClick={notifySoon}
                   className="font-body text-sm text-text-secondary cursor-pointer transition-colors hover:text-neon-primary"
                 >
-                  ¿Olvidaste tu contraseña?
+                  ¿Olvidaste tu contrasena?
                 </button>
                 <button
                   type="button"

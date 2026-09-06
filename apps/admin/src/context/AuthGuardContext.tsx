@@ -1,6 +1,7 @@
 "use client";
 
 import type { AdminUserRole } from "@shared/types";
+import { jwtDecode } from "@shared/utils";
 import type { ReactNode } from "react";
 import {
   createContext,
@@ -10,16 +11,30 @@ import {
   useState,
 } from "react";
 
+import { LOCAL_STORAGE_KEYS } from "@/constants";
+import { adminApi } from "@/libs/adminApi";
+
 export interface AdminSession {
   username: string;
+  email: string;
   role: AdminUserRole;
+  accessToken: string;
+  refreshToken: string;
+}
+
+interface CustomJwtClaims {
+  id?: number;
+  email?: string;
+  role?: string;
+  exp?: number;
+  iat?: number;
 }
 
 interface AuthGuardContextValue {
   session: AdminSession | null;
   sessionReady: boolean;
-  signIn: (username: string, role?: AdminUserRole) => void;
-  signOut: () => void;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
   hasRole: (role: AdminUserRole) => boolean;
 }
 
@@ -32,11 +47,11 @@ const AuthGuardContext = createContext<AuthGuardContextValue | undefined>(
 function readStoredSession(): AdminSession | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as AdminSession;
     if (
-      typeof parsed?.username !== "string" ||
+      typeof parsed?.email !== "string" ||
       (parsed.role !== "SUPER_ADMIN" && parsed.role !== "ADMIN")
     ) {
       return null;
@@ -48,10 +63,7 @@ function readStoredSession(): AdminSession | null {
 }
 
 /**
- * Autenticación del panel. Hoy maneja una sesión simulada en sessionStorage;
- * cuando la integración esté lista, `signIn`/`signOut` se conectarán al
- * backend y la sesión pasará a ser el token/cookie real. Los guards
- * (`RequireRole`) ya trabajan contra esta interfaz.
+ * Autenticación del panel de administración integrada con endpoints del backend mediante `adminApi` y `jwtDecode`.
  */
 export function AuthGuardProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AdminSession | null>(
@@ -63,27 +75,67 @@ export function AuthGuardProvider({ children }: { children: ReactNode }) {
     setSessionReady(true);
   }, []);
 
-  const signIn = useCallback(
-    (username: string, role: AdminUserRole = "SUPER_ADMIN") => {
-      const next: AdminSession = { username, role };
-      try {
-        window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // Almacenamiento no disponible: la sesión vive solo en memoria.
-      }
-      setSession(next);
-    },
-    [],
-  );
-
-  const signOut = useCallback(() => {
+  const signIn = useCallback(async (email: string, password: string) => {
+    const tokens = await adminApi.login({ email, password });
+    let claims: CustomJwtClaims | null = null;
     try {
-      window.sessionStorage.removeItem(STORAGE_KEY);
+      claims = jwtDecode<CustomJwtClaims>(tokens.access_token);
     } catch {
-      // Nada que limpiar.
+      claims = null;
     }
-    setSession(null);
+
+    const rawRole = claims?.role?.toUpperCase() ?? "ADMIN";
+    const role: AdminUserRole =
+      rawRole === "SUPERADMIN" || rawRole === "SUPER_ADMIN"
+        ? "SUPER_ADMIN"
+        : "ADMIN";
+
+    const emailValue = claims?.email ?? email;
+    const username = emailValue.split("@")[0] || emailValue;
+
+    const nextSession: AdminSession = {
+      username,
+      email: emailValue,
+      role,
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+    };
+
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession));
+      window.localStorage.setItem(
+        LOCAL_STORAGE_KEYS.accessToken,
+        tokens.access_token,
+      );
+      window.localStorage.setItem(
+        LOCAL_STORAGE_KEYS.refreshToken,
+        tokens.refresh_token,
+      );
+    } catch {
+      // Almacenamiento no disponible: la sesión vive solo en memoria.
+    }
+    setSession(nextSession);
   }, []);
+
+  const signOut = useCallback(async () => {
+    const currentRefreshToken = session?.refreshToken;
+    try {
+      if (currentRefreshToken) {
+        await adminApi.logout(currentRefreshToken);
+      }
+    } catch {
+      // Se limpia la sesión local incluso si el backend retorna error o no está alcanzable.
+    } finally {
+      try {
+        window.localStorage.removeItem(STORAGE_KEY);
+        window.localStorage.removeItem(LOCAL_STORAGE_KEYS.accessToken);
+        window.localStorage.removeItem(LOCAL_STORAGE_KEYS.refreshToken);
+      } catch {
+        // Nada que limpiar.
+      }
+      setSession(null);
+    }
+  }, [session?.refreshToken]);
 
   const hasRole = useCallback(
     (role: AdminUserRole) => session?.role === role,

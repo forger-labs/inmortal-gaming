@@ -11,8 +11,8 @@ import {
 import type { AdminNavLink } from "@shared/types";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { sileo } from "sileo";
 
+import { cyberInfo } from "@/components/toasts/cyberToasts";
 import { ROUTES } from "@/constants/routes";
 import { useAuthGuard } from "../../context/AuthGuardContext";
 import { useAdminSidebar } from "./AdminSidebarContext";
@@ -58,14 +58,10 @@ export function AdminSidebar() {
     (link) => link.href !== "/admin/usuarios" || isSuperAdmin,
   );
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     const operator = session?.username ?? "operador";
-    signOut();
-    sileo.info({
-      title: "Sesión cerrada",
-      description: `Hasta pronto, @${operator}.`,
-      position: "top-center",
-    });
+    await signOut();
+    cyberInfo(`Sesion cerrada. Hasta pronto, @${operator}.`);
     router.replace("/");
   };
 

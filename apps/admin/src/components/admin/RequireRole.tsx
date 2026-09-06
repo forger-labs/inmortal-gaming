@@ -5,8 +5,8 @@ import type { AdminUserRole } from "@shared/types";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
-import { sileo } from "sileo";
 
+import { cyberError } from "@/components/toasts/cyberToasts";
 import { useAuthGuard } from "../../context/AuthGuardContext";
 
 interface RequireRoleProps {
@@ -61,11 +61,7 @@ export function RequireRole({ requiredRole, children }: RequireRoleProps) {
   useEffect(() => {
     if (denied && !deniedNotified.current) {
       deniedNotified.current = true;
-      sileo.error({
-        title: "Acceso restringido",
-        description: "Sección exclusiva para SUPER_ADMIN.",
-        position: "top-center",
-      });
+      cyberError("Acceso restringido. Seccion exclusiva para SUPER_ADMIN.");
     }
   }, [denied]);
 

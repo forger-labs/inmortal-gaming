@@ -14,7 +14,7 @@
 - **No missing htmlFor attributes** on form labels. Always use `htmlFor` to associate labels with inputs.
 - **No missing alt attributes** on images. Always provide meaningful `alt` text for `<Image>` components.
 - **No recreate of components** that already exist. Reuse existing components instead of creating duplicates.
-- **Use sileo toasts** for notifications instead of `alert()` or `console.log()`.
+- **Use react-host-toast** for notifications instead of `alert()` or `console.log()`.
 - **No accent for text**. All text should be in neutral Spanish, avoiding regionalisms or slang.
 - **Use Yup for form validation**. All forms should use Yup for validation schemas.
 - **Use Formik for forms**. All forms should be built using Formik for state management and validation.
