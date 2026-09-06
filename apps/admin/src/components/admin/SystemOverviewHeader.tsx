@@ -1,25 +1,11 @@
 "use client";
 
-import { MenuIcon, SearchIcon } from "@shared/icons";
-
-import { useAdminSidebar } from "./AdminSidebarContext";
+import { SearchIcon } from "@shared/icons";
 
 export function SystemOverviewHeader() {
-  const { toggleMobile } = useAdminSidebar();
-
   return (
     <header className="flex flex-col justify-between gap-4 border-b border-[#ffffff0a] bg-[#0a0b10] px-10 py-4 min-[900px]:flex-row min-[900px]:items-center min-[900px]:gap-8">
       <div className="min-w-0">
-        {/* ─── Mobile menu toggle ─── */}
-        <button
-          type="button"
-          onClick={toggleMobile}
-          aria-label="Open sidebar"
-          className="mb-3 p-1 text-neon-primary transition-colors hover:text-white min-[700px]:hidden"
-        >
-          <MenuIcon className="h-6 w-6" />
-        </button>
-
         {/* ─── Title + status ─── */}
         <h1 className="font-display text-3xl sm:text-4xl font-semibold text-white">
           System Overview

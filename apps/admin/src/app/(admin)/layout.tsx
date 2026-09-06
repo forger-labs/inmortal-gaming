@@ -5,6 +5,7 @@ import { useEffect } from "react";
 
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminSidebarProvider } from "@/components/admin/AdminSidebarContext";
+import { ButtonSidebar } from "@/components/admin/ButtonSidebar";
 import { useAuthGuard } from "@/context/AuthGuardContext";
 
 export default function AdminLayout({
@@ -35,7 +36,10 @@ export default function AdminLayout({
     <AdminSidebarProvider>
       <div className="flex min-h-screen bg-bg-primary">
         <AdminSidebar />
-        <main className="w-full min-[700px]:ml-[250px]">{children}</main>
+        <main className="w-full min-[700px]:ml-[250px]">
+          <ButtonSidebar />
+          {children}
+        </main>
       </div>
     </AdminSidebarProvider>
   );
