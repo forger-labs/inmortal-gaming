@@ -9,11 +9,12 @@ import type {
 } from "@shared/types";
 import { useCallback, useEffect, useState } from "react";
 
-import { RequireRole } from "@/components/RequireRole";
 import { UsersFilterBar } from "@/components/admin/UsersFilterBar";
-import { UsersPagination } from "@/components/admin/UsersPagination";
 import { UserFormModal } from "@/components/admin/users/UserFormModal";
 import { UsersTable } from "@/components/admin/users/UsersTable";
+import { ListHeader } from "@/components/commonList/ListHeader";
+import { Pagination } from "@/components/commonList/Pagination";
+import { RequireRole } from "@/components/RequireRole";
 import {
   cyberError,
   cyberInfo,
@@ -124,7 +125,7 @@ export default function AdminUsersPage() {
         });
 
         cyberSuccess(
-          `Administrador creado. ${values.name} ${values.lastname} se agregó al sistema.`,
+          `Administrador creado. ${values.name} ${values.lastname} se agrego al sistema.`,
         );
       } else if (modal.user) {
         await adminApi.updateAdmin(modal.user.id, {
@@ -153,35 +154,23 @@ export default function AdminUsersPage() {
 
   const handleDeletePlaceholder = (user: AdminUser) => {
     cyberInfo(
-      `Eliminar a ${user.name} ${user.lastname} no está disponible (funcionalidad pendiente de integración).`,
+      `Eliminar a ${user.name} ${user.lastname} no esta disponible (funcionalidad pendiente de integracion).`,
     );
   };
 
   return (
-
     <RequireRole requiredRole={["SUPER_ADMIN"]}>
       <div className="flex min-h-screen flex-col px-6 py-6 lg:px-8">
         {/* ─── Header ─── */}
-        <header className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <h1 className="font-display text-3xl font-semibold text-text-primary">
-              Administradores
-            </h1>
-            <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-neon-primary">
-              Gestión del sistema :: rol requerido: super_admin
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setModal({ open: true, mode: "create" })}
-            className="btn-neon-primary flex items-center justify-center gap-2 rounded-sm px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-bg-primary cursor-pointer"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Crear administrador
-          </button>
-        </header>
+        <ListHeader
+          title="Administradores"
+          subtitle="Gestion del sistema :: rol requerido: super_admin"
+          actionLabel="Crear administrador"
+          actionIcon={<PlusIcon className="h-4 w-4" />}
+          onAction={() => setModal({ open: true, mode: "create" })}
+        />
 
-        {/* ─── Panel: filtros + tabla + paginación ─── */}
+        {/* ─── Panel: filtros + tabla + paginacion ─── */}
         <section
           aria-label="Lista de administradores"
           className="overflow-hidden rounded-lg border border-white/5 bg-bg-surface"
@@ -198,12 +187,13 @@ export default function AdminUsersPage() {
             onDelete={handleDeletePlaceholder}
           />
           {!loading && total > 0 && (
-            <UsersPagination
+            <Pagination
               page={page}
               pageCount={totalPages}
               total={total}
               pageSize={PAGE_SIZE}
               onChange={handlePageChange}
+              ariaLabel="Paginacion de administradores"
             />
           )}
         </section>

@@ -10,6 +10,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { Toaster } from "react-hot-toast";
 
 import { LOCAL_STORAGE_KEYS } from "@/constants";
 import { adminApi } from "@/libs/adminApi";
@@ -45,9 +46,9 @@ const AuthGuardContext = createContext<AuthGuardContextValue | undefined>(
 );
 
 function readStoredSession(): AdminSession | null {
-  if (typeof window === "undefined") return null;
+  // if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as AdminSession;
     if (
@@ -102,12 +103,9 @@ export function AuthGuardProvider({ children }: { children: ReactNode }) {
     };
 
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession));
-      window.localStorage.setItem(
-        LOCAL_STORAGE_KEYS.accessToken,
-        tokens.access_token,
-      );
-      window.localStorage.setItem(
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession));
+      localStorage.setItem(LOCAL_STORAGE_KEYS.accessToken, tokens.access_token);
+      localStorage.setItem(
         LOCAL_STORAGE_KEYS.refreshToken,
         tokens.refresh_token,
       );
@@ -127,9 +125,9 @@ export function AuthGuardProvider({ children }: { children: ReactNode }) {
       // Se limpia la sesión local incluso si el backend retorna error o no está alcanzable.
     } finally {
       try {
-        window.localStorage.removeItem(STORAGE_KEY);
-        window.localStorage.removeItem(LOCAL_STORAGE_KEYS.accessToken);
-        window.localStorage.removeItem(LOCAL_STORAGE_KEYS.refreshToken);
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.accessToken);
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.refreshToken);
       } catch {
         // Nada que limpiar.
       }
@@ -147,6 +145,7 @@ export function AuthGuardProvider({ children }: { children: ReactNode }) {
       value={{ session, sessionReady, signIn, signOut, hasRole }}
     >
       {children}
+      <Toaster position="top-right" />
     </AuthGuardContext.Provider>
   );
 }

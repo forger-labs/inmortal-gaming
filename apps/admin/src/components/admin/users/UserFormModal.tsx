@@ -13,6 +13,9 @@ import * as yup from "yup";
 
 import { EASE_OUT_EXPO } from "@/constants";
 import { Field } from "../../forms/Field";
+import { CancelButton } from "../commonForm/CancelButton";
+import { FormInput } from "../commonForm/FormInput";
+import { FormSubmitButton } from "../commonForm/FormSubmitButton";
 
 interface UserFormModalProps {
   open: boolean;
@@ -21,9 +24,6 @@ interface UserFormModalProps {
   onSubmit: (values: AdminUserFormValues) => Promise<void> | void;
   onClose: () => void;
 }
-
-const inputClass =
-  "w-full rounded-md border border-white/10 bg-bg-primary px-3.5 py-2.5 font-body text-sm text-text-primary transition-all placeholder:text-text-muted/50 focus:border-neon-primary focus:outline-none focus:ring-1 focus:ring-neon-primary";
 
 export function UserFormModal({
   open,
@@ -41,30 +41,30 @@ export function UserFormModal({
         name: yup
           .string()
           .trim()
-          .min(2, "Mínimo 2 caracteres")
+          .min(2, "Minimo 2 caracteres")
           .required("Ingresa el nombre"),
         lastname: yup
           .string()
           .trim()
-          .min(2, "Mínimo 2 caracteres")
+          .min(2, "Minimo 2 caracteres")
           .required("Ingresa el apellido"),
         email: yup
           .string()
           .trim()
-          .email("Ingresa un correo electrónico válido")
-          .required("Ingresa el correo electrónico"),
+          .email("Ingresa un correo electronico valido")
+          .required("Ingresa el correo electronico"),
         password: isEdit
           ? yup
               .string()
               .test(
                 "password-min",
-                "Mínimo 6 caracteres",
+                "Minimo 6 caracteres",
                 (val) => !val || val.length >= 6,
               )
           : yup
               .string()
-              .min(6, "Mínimo 6 caracteres")
-              .required("Ingresa una contraseña"),
+              .min(6, "Minimo 6 caracteres")
+              .required("Ingresa una contrasena"),
         role: yup
           .mixed<AdminUserRole>()
           .oneOf(["SUPER_ADMIN", "ADMIN"])
@@ -157,10 +157,10 @@ export function UserFormModal({
               <header className="flex items-start justify-between gap-4 border-b border-white/5 px-6 py-5">
                 <div>
                   <span
-                    data-text="GESTIÓN DE ADMINISTRADORES"
+                    data-text="GESTION DE ADMINISTRADORES"
                     className="glitch w-fit font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-neon-primary"
                   >
-                    Gestión de administradores
+                    Gestion de administradores
                   </span>
                   <h2
                     id="user-form-title"
@@ -191,7 +191,7 @@ export function UserFormModal({
                     label="Nombre"
                     error={formik.touched.name ? formik.errors.name : undefined}
                   >
-                    <input
+                    <FormInput
                       id="user-form-name"
                       ref={nameInputRef}
                       name="name"
@@ -201,12 +201,14 @@ export function UserFormModal({
                       value={formik.values.name}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
+                      hasError={
+                        formik.touched.name && Boolean(formik.errors.name)
+                      }
                       aria-invalid={
                         formik.touched.name
                           ? Boolean(formik.errors.name)
                           : undefined
                       }
-                      className={inputClass}
                     />
                   </Field>
 
@@ -219,32 +221,35 @@ export function UserFormModal({
                         : undefined
                     }
                   >
-                    <input
+                    <FormInput
                       id="user-form-lastname"
                       name="lastname"
                       type="text"
                       autoComplete="family-name"
-                      placeholder="ej. Hernández"
+                      placeholder="ej. Hernandez"
                       value={formik.values.lastname}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
+                      hasError={
+                        formik.touched.lastname &&
+                        Boolean(formik.errors.lastname)
+                      }
                       aria-invalid={
                         formik.touched.lastname
                           ? Boolean(formik.errors.lastname)
                           : undefined
                       }
-                      className={inputClass}
                     />
                   </Field>
 
                   <Field
                     id="user-form-email"
-                    label="Correo electrónico"
+                    label="Correo electronico"
                     error={
                       formik.touched.email ? formik.errors.email : undefined
                     }
                   >
-                    <input
+                    <FormInput
                       id="user-form-email"
                       name="email"
                       type="email"
@@ -253,12 +258,14 @@ export function UserFormModal({
                       value={formik.values.email}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
+                      hasError={
+                        formik.touched.email && Boolean(formik.errors.email)
+                      }
                       aria-invalid={
                         formik.touched.email
                           ? Boolean(formik.errors.email)
                           : undefined
                       }
-                      className={inputClass}
                     />
                   </Field>
 
@@ -273,7 +280,7 @@ export function UserFormModal({
                       value={formik.values.role}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
-                      className={`${inputClass} cursor-pointer`}
+                      className="w-full cursor-pointer rounded-md border border-white/10 bg-bg-primary px-3.5 py-2.5 font-body text-sm text-text-primary transition-all placeholder:text-text-muted/50 focus:border-neon-primary focus:outline-none focus:ring-1 focus:ring-neon-primary"
                     >
                       <option value="ADMIN">Admin</option>
                       <option value="SUPER_ADMIN">Super Admin</option>
@@ -283,32 +290,35 @@ export function UserFormModal({
                   <div className="sm:col-span-2">
                     <Field
                       id="user-form-password"
-                      label={isEdit ? "Contraseña (opcional)" : "Contraseña"}
+                      label={isEdit ? "Contrasena (opcional)" : "Contrasena"}
                       error={
                         formik.touched.password
                           ? formik.errors.password
                           : undefined
                       }
                     >
-                      <input
+                      <FormInput
                         id="user-form-password"
                         name="password"
                         type="password"
                         autoComplete={isEdit ? "new-password" : "new-password"}
                         placeholder={
                           isEdit
-                            ? "En blanco para mantener contraseña actual"
-                            : "Mínimo 6 caracteres"
+                            ? "En blanco para mantener contrasena actual"
+                            : "Minimo 6 caracteres"
                         }
                         value={formik.values.password}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
+                        hasError={
+                          formik.touched.password &&
+                          Boolean(formik.errors.password)
+                        }
                         aria-invalid={
                           formik.touched.password
                             ? Boolean(formik.errors.password)
                             : undefined
                         }
-                        className={inputClass}
                       />
                     </Field>
                   </div>
@@ -316,31 +326,20 @@ export function UserFormModal({
 
                 {isEdit && (
                   <p className="font-body text-xs leading-relaxed text-text-secondary">
-                    Deja la contraseña en blanco para conservar la actual. La
-                    contraseña nunca se muestra en la lista.
+                    Deja la contrasena en blanco para conservar la actual. La
+                    contrasena nunca se muestra en la lista.
                   </p>
                 )}
 
                 {/* ─── Footer ─── */}
                 <div className="mt-2 flex flex-col-reverse gap-2 border-t border-white/5 pt-4 sm:flex-row sm:justify-end">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="rounded-sm border border-white/10 px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-text-secondary transition-colors hover:border-neon-primary hover:text-neon-primary cursor-pointer"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={formik.isSubmitting}
-                    className="btn-neon-primary flex items-center justify-center gap-2 rounded-sm px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-bg-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {formik.isSubmitting
-                      ? "Guardando..."
-                      : isEdit
-                        ? "Guardar cambios"
-                        : "Crear administrador"}
-                  </button>
+                  <CancelButton onClick={onClose} />
+                  <FormSubmitButton
+                    submitting={formik.isSubmitting}
+                    isEdit={isEdit}
+                    createLabel="Crear administrador"
+                    editLabel="Guardar cambios"
+                  />
                 </div>
               </form>
             </motion.div>

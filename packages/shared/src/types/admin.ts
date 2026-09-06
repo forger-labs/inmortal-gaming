@@ -1,7 +1,13 @@
 export interface AdminNavLink {
   label: string;
   href: string;
-  icon: "dashboard" | "products" | "orders" | "analytics" | "users";
+  icon:
+    | "dashboard"
+    | "products"
+    | "categories"
+    | "orders"
+    | "analytics"
+    | "users";
 }
 
 export type AdminStatTone = "green" | "amber" | "muted";

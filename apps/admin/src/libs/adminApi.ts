@@ -5,11 +5,14 @@ import type {
   AdminEntity,
   ApiResponse,
   AuthTokens,
+  CategoryEntity,
   CreateAdminDTO,
+  CreateCategoryDTO,
   LoginDTO,
   PaginatedResult,
   RefreshTokenDTO,
   UpdateAdminDTO,
+  UpdateCategoryDTO,
 } from "@shared/types";
 import axios from "axios";
 
@@ -246,6 +249,208 @@ export default class AdminApi {
       }
 
       return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista paginada de categorías (`GET /categories`).
+   */
+  async getCategories(
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResult<CategoryEntity>> {
+    const result: ApiResponse<PaginatedResult<CategoryEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/categories?page=${page}&limit=${limit}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<CategoryEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener categorías";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene una categoría por su identificador (`GET /categories/:id`).
+   */
+  async getCategoryById(id: number | string): Promise<CategoryEntity> {
+    const result: ApiResponse<CategoryEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/categories/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<CategoryEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener la categoría";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene una categoría por su nombre (`GET /categories/name/:name`).
+   */
+  async getCategoryByName(name: string): Promise<CategoryEntity> {
+    const result: ApiResponse<CategoryEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/categories/name/${encodeURIComponent(name)}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<CategoryEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener la categoría por nombre";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Crea una nueva categoría (`POST /categories`).
+   */
+  async createCategory(dto: CreateCategoryDTO): Promise<CategoryEntity> {
+    const result: ApiResponse<CategoryEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.post<CreateCategoryDTO>({
+        url: "/categories",
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<CategoryEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al crear la categoría";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza una categoría existente (`PUT /categories/:id`).
+   */
+  async updateCategory(
+    id: number | string,
+    dto: UpdateCategoryDTO,
+  ): Promise<CategoryEntity> {
+    const result: ApiResponse<CategoryEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.put({
+        url: `/categories/${id}`,
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<CategoryEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al actualizar la categoría";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina una categoría (`DELETE /categories/:id`).
+   */
+  async deleteCategory(id: number | string): Promise<{ message: string }> {
+    const result: ApiResponse<{ message: string }> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.delete({
+        url: `/categories/${id}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<{
+        message: string;
+      }>;
+      if (!success) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al eliminar la categoría";
+        throw new Error(errorMessage);
+      }
+
+      return data ?? { message: "Categoría eliminada exitosamente" };
     } catch (error) {
       handleApiError(error, result);
       throw error;

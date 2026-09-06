@@ -2,6 +2,7 @@ export { ActivateIcon } from "./ActivateIcon";
 export { AnalyticsIcon } from "./AnalyticsIcon";
 export { BoltIcon } from "./BoltIcon";
 export { CartIcon } from "./CartIcon";
+export { CategoriesIcon } from "./CategoriesIcon";
 export { ChevronDownIcon } from "./ChevronDownIcon";
 export { ChevronLeftIcon } from "./ChevronLeftIcon";
 export { ChevronRightIcon } from "./ChevronRightIcon";

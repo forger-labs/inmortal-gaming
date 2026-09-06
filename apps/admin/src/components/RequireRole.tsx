@@ -51,7 +51,7 @@ export function RequireRole({ requiredRole, children }: RequireRoleProps) {
   if (denied) {
     return (
       <Forbidden
-        requiredRole={requiredRole.join(' / ')}
+        requiredRole={requiredRole.join(" / ")}
         onBack={() => router.push(ROUTES.admin)}
       />
     );

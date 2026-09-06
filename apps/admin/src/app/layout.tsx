@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
-import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
 import { AuthGuardProvider } from "@/context/AuthGuardContext";
@@ -41,7 +40,6 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col antialiased bg-bg-primary text-text-primary font-body">
         <AuthGuardProvider>{children}</AuthGuardProvider>
-        <Toaster position="top-right" />
       </body>
     </html>
   );

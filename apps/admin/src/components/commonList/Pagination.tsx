@@ -2,13 +2,7 @@
 
 import { ChevronLeftIcon, ChevronRightIcon } from "@shared/icons";
 
-interface UsersPaginationProps {
-  page: number;
-  pageCount: number;
-  total: number;
-  pageSize: number;
-  onChange: (page: number) => void;
-}
+import type { PaginationProps } from "@/types/list";
 
 function getPageItems(
   page: number,
@@ -44,13 +38,14 @@ function getPageItems(
   return items;
 }
 
-export function UsersPagination({
+export function Pagination({
   page,
   pageCount,
   total,
   pageSize,
   onChange,
-}: UsersPaginationProps) {
+  ariaLabel = "Paginacion",
+}: PaginationProps) {
   if (total === 0) return null;
 
   const from = (page - 1) * pageSize + 1;
@@ -58,7 +53,7 @@ export function UsersPagination({
 
   return (
     <nav
-      aria-label="Paginación de usuarios"
+      aria-label={ariaLabel}
       className="flex flex-col items-center justify-between gap-3 border-t border-white/5 bg-bg-surface px-6 py-4 sm:flex-row"
     >
       <p className="font-mono text-[11px] uppercase tracking-wider text-text-secondary">
@@ -70,7 +65,7 @@ export function UsersPagination({
           type="button"
           onClick={() => onChange(page - 1)}
           disabled={page <= 1}
-          aria-label="Página anterior"
+          aria-label="Pagina anterior"
           className="rounded-sm border border-white/10 p-2 text-text-secondary transition-colors hover:border-neon-primary hover:text-neon-primary active:scale-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/10 disabled:hover:text-text-secondary cursor-pointer"
         >
           <ChevronLeftIcon className="h-4 w-4" />
@@ -91,7 +86,7 @@ export function UsersPagination({
               key={item.key}
               onClick={() => onChange(item.value)}
               aria-current={item.value === page ? "page" : undefined}
-              aria-label={`Página ${item.value}`}
+              aria-label={`Pagina ${item.value}`}
               className={`min-w-9 rounded-sm border px-2 py-2 font-mono text-xs font-semibold transition-colors active:scale-90 cursor-pointer ${
                 item.value === page
                   ? "border-neon-primary bg-neon-primary/10 text-neon-primary"
@@ -107,7 +102,7 @@ export function UsersPagination({
           type="button"
           onClick={() => onChange(page + 1)}
           disabled={page >= pageCount}
-          aria-label="Página siguiente"
+          aria-label="Pagina siguiente"
           className="rounded-sm border border-white/10 p-2 text-text-secondary transition-colors hover:border-neon-primary hover:text-neon-primary active:scale-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/10 disabled:hover:text-text-secondary cursor-pointer"
         >
           <ChevronRightIcon className="h-4 w-4" />
