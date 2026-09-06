@@ -2,10 +2,14 @@ import HttpClient, {
   handleApiError,
 } from "@inmortal/shared/src/libs/httpClient";
 import type {
+  AdminEntity,
   ApiResponse,
   AuthTokens,
+  CreateAdminDTO,
   LoginDTO,
+  PaginatedResult,
   RefreshTokenDTO,
+  UpdateAdminDTO,
 } from "@shared/types";
 import axios from "axios";
 
@@ -76,6 +80,172 @@ export default class AdminApi {
       }
 
       return data || "Sesión cerrada exitosamente";
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista paginada de administradores (`GET /admins`).
+   */
+  async getAdmins(page = 1, limit = 10): Promise<PaginatedResult<AdminEntity>> {
+    const result: ApiResponse<PaginatedResult<AdminEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/admins?page=${page}&limit=${limit}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<AdminEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener administradores";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un administrador por su identificador (`GET /admins/:id`).
+   */
+  async getAdminById(id: number | string): Promise<AdminEntity> {
+    const result: ApiResponse<AdminEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/admins/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<AdminEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el administrador";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un administrador por su correo electrónico (`GET /admins/email/:email`).
+   */
+  async getAdminByEmail(email: string): Promise<AdminEntity> {
+    const result: ApiResponse<AdminEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/admins/email/${encodeURIComponent(email)}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<AdminEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el administrador por email";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Crea un nuevo administrador (`POST /admins`).
+   */
+  async createAdmin(dto: CreateAdminDTO): Promise<AdminEntity> {
+    const result: ApiResponse<AdminEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.post<CreateAdminDTO>({
+        url: "/admins",
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<AdminEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al crear el administrador";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza un administrador existente (`PUT /admins/:id`).
+   */
+  async updateAdmin(
+    id: number | string,
+    dto: UpdateAdminDTO,
+  ): Promise<AdminEntity> {
+    const result: ApiResponse<AdminEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.put({
+        url: `/admins/${id}`,
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<AdminEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al actualizar el administrador";
+        throw new Error(errorMessage);
+      }
+
+      return data;
     } catch (error) {
       handleApiError(error, result);
       throw error;

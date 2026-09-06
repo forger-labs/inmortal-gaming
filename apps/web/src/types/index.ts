@@ -14,8 +14,10 @@ export interface CartItem {
 export interface AuthContextValue {
   isAuthenticated: boolean;
   email: string | null;
-  login: (email: string) => void;
-  logout: () => void;
+  accessToken: string | null;
+  refreshToken: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 export type CatalogSort = "relevance" | "price-asc" | "price-desc";

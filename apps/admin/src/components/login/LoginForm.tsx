@@ -1,25 +1,25 @@
 "use client";
 
-import { BoltIcon, LockIcon, UserIcon } from "@shared/icons";
+import { BoltIcon, EmailIcon, LockIcon } from "@shared/icons";
 import { useFormik } from "formik";
 import type { Variants } from "framer-motion";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { sileo } from "sileo";
 import * as yup from "yup";
 
+import { cyberError, cyberSuccess } from "@/components/toasts/cyberToasts";
 import { useAuthGuard } from "@/context/AuthGuardContext";
 
 const loginSchema = yup.object({
-  username: yup
+  email: yup
     .string()
     .trim()
-    .min(3, "El usuario debe tener al menos 3 caracteres")
-    .required("Ingresa tu usuario"),
+    .email("Ingresa un correo electronico valido")
+    .required("Ingresa tu correo electronico"),
   password: yup
     .string()
-    .min(6, "La contraseña debe tener al menos 6 caracteres")
-    .required("Ingresa tu contraseña"),
+    .min(6, "La contrasena debe tener al menos 6 caracteres")
+    .required("Ingresa tu contrasena"),
 });
 
 export function LoginForm({ variants }: { variants?: Variants }) {
@@ -27,16 +27,20 @@ export function LoginForm({ variants }: { variants?: Variants }) {
   const router = useRouter();
 
   const formik = useFormik({
-    initialValues: { username: "", password: "" },
+    initialValues: { email: "", password: "" },
     validationSchema: loginSchema,
-    onSubmit: (values) => {
-      signIn(values.username.trim());
-      sileo.success({
-        title: "Sesión iniciada",
-        description: `Bienvenido, ${values.username.trim()}`,
-        position: "top-center",
-      });
-      router.push("/admin");
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        await signIn(values.email.trim(), values.password);
+        cyberSuccess(`Sesion iniciada. Bienvenido, ${values.email.trim()}`);
+        router.push("/admin");
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Error al iniciar sesion";
+        cyberError(message);
+      } finally {
+        setSubmitting(false);
+      }
     },
   });
 
@@ -49,39 +53,37 @@ export function LoginForm({ variants }: { variants?: Variants }) {
     >
       <div className="flex flex-col gap-1.5">
         <label
-          htmlFor="login-username"
+          htmlFor="login-email"
           className="flex items-center gap-2 font-mono text-[13px] font-semibold uppercase text-neon-primary/80"
         >
-          <UserIcon className="h-4 w-4" />
-          Usuario
+          <EmailIcon className="h-4 w-4" />
+          Correo electronico
         </label>
         <input
-          id="login-username"
-          name="username"
-          type="text"
-          autoComplete="username"
-          placeholder="tu.usuario"
-          value={formik.values.username}
+          id="login-email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder="admin@inmortal.com"
+          value={formik.values.email}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           aria-invalid={
-            formik.touched.username
-              ? Boolean(formik.errors.username)
-              : undefined
+            formik.touched.email ? Boolean(formik.errors.email) : undefined
           }
           aria-describedby={
-            formik.touched.username && formik.errors.username
-              ? "login-username-error"
+            formik.touched.email && formik.errors.email
+              ? "login-email-error"
               : undefined
           }
           className="w-full rounded-md border border-white/10 bg-bg-primary px-4 py-3 font-body text-base text-text-primary transition-all placeholder:text-text-muted/40 focus:border-neon-primary focus:outline-none focus:ring-1 focus:ring-neon-primary"
         />
-        {formik.touched.username && formik.errors.username && (
+        {formik.touched.email && formik.errors.email && (
           <p
-            id="login-username-error"
+            id="login-email-error"
             className="font-body text-xs text-neon-pink"
           >
-            {formik.errors.username}
+            {formik.errors.email}
           </p>
         )}
       </div>
@@ -92,7 +94,7 @@ export function LoginForm({ variants }: { variants?: Variants }) {
           className="flex items-center gap-2 font-mono text-[13px] font-semibold uppercase text-neon-primary/80"
         >
           <LockIcon className="h-4 w-4" />
-          Contraseña
+          Contrasena
         </label>
         <input
           id="login-password"
@@ -131,7 +133,7 @@ export function LoginForm({ variants }: { variants?: Variants }) {
         whileTap={{ scale: 0.97 }}
         className="btn-neon-primary mt-2 flex w-full items-center justify-center gap-2 rounded-sm py-4 font-display text-sm font-semibold uppercase tracking-widest text-bg-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {formik.isSubmitting ? "Verificando…" : "Iniciar sesión"}
+        {formik.isSubmitting ? "Verificando…" : "Iniciar sesion"}
         {!formik.isSubmitting && <BoltIcon className="h-5 w-5" />}
       </motion.button>
     </motion.form>

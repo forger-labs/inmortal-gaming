@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@inmortal/shared": "workspace:*",
+    "axios": "^1.20.0",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "formik": "^2.4.9",
@@ -16,6 +17,7 @@
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-hot-toast": "^2.6.0",
     "sileo": "^0.1.5",
     "yup": "^1.7.1"
   },

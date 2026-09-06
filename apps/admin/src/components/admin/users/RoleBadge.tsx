@@ -1,12 +1,13 @@
 import type { AdminUserRole } from "@shared/types";
 
-const ROLE_LABELS: Record<AdminUserRole, string> = {
-  SUPER_ADMIN: "Super Admin",
-  ADMIN: "Admin",
-};
+export function RoleBadge({ role }: { role: AdminUserRole | string }) {
+  const normalizedRole =
+    role?.toUpperCase() === "SUPERADMIN" ||
+    role?.toUpperCase() === "SUPER_ADMIN"
+      ? "SUPER_ADMIN"
+      : "ADMIN";
 
-export function RoleBadge({ role }: { role: AdminUserRole }) {
-  const isSuper = role === "SUPER_ADMIN";
+  const isSuper = normalizedRole === "SUPER_ADMIN";
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 font-mono text-[11px] font-semibold uppercase tracking-wider ${
@@ -15,7 +16,7 @@ export function RoleBadge({ role }: { role: AdminUserRole }) {
           : "border-neon-purple/30 bg-neon-purple/15 text-text-primary"
       }`}
     >
-      {ROLE_LABELS[role]}
+      {isSuper ? "Super Admin" : "Admin"}
     </span>
   );
 }

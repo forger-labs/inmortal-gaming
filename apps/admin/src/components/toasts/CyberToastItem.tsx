@@ -4,7 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import type { Toast } from "react-hot-toast";
 import toast from "react-hot-toast";
 
-export type CyberToastType = "success" | "error" | "loading" | "info";
+export type CyberToastType =
+  | "success"
+  | "error"
+  | "loading"
+  | "info"
+  | "warning";
 
 export interface CyberToastItemProps {
   toastInstance: Toast;

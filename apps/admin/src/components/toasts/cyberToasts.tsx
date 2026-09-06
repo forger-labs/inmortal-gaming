@@ -61,3 +61,11 @@ export function cyberInfo(
 ) {
   cyberToast(header, message, "info", options);
 }
+
+export function cyberWarning(
+  message: string,
+  header = "[SYSTEM WARNNING]",
+  options?: CyberToastOptions,
+) {
+  cyberToast(header, message, "warning", options);
+}

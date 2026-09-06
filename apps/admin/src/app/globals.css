@@ -486,6 +486,11 @@ body {
   --toast-glow: rgba(0, 217, 255, 0.35);
 }
 
+.cyber-toast.warning {
+  --toast-accent: #eeff00;
+  --toast-glow: rgba(238, 255, 0, 0.35);
+}
+
 .cyber-toast .glitch-layer {
   position: absolute;
   inset: 0;

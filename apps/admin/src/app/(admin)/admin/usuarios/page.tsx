@@ -1,22 +1,27 @@
 "use client";
 
 import { PlusIcon } from "@shared/icons";
-import { ADMIN_USERS } from "@shared/mocks";
 import type {
+  AdminEntity,
   AdminUser,
   AdminUserFilters,
   AdminUserFormValues,
 } from "@shared/types";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { RequireRole } from "@/components/admin/RequireRole";
+import { RequireRole } from "@/components/RequireRole";
 import { UsersFilterBar } from "@/components/admin/UsersFilterBar";
 import { UsersPagination } from "@/components/admin/UsersPagination";
 import { UserFormModal } from "@/components/admin/users/UserFormModal";
 import { UsersTable } from "@/components/admin/users/UsersTable";
-import { cyberSuccess } from "@/components/toasts/cyberToasts";
+import {
+  cyberError,
+  cyberInfo,
+  cyberSuccess,
+} from "@/components/toasts/cyberToasts";
+import { adminApi } from "@/libs/adminApi";
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 10;
 
 interface ModalState {
   open: boolean;
@@ -27,118 +32,140 @@ interface ModalState {
 const DEFAULT_FILTERS: AdminUserFilters = {
   search: "",
   role: "all",
-  status: "all",
 };
 
 const CLOSED_MODAL: ModalState = { open: false, mode: "create" };
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<AdminUser[]>(ADMIN_USERS);
-  const [filters, setFilters] = useState<AdminUserFilters>(DEFAULT_FILTERS);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<AdminUserFilters>(DEFAULT_FILTERS);
   const [modal, setModal] = useState<ModalState>(CLOSED_MODAL);
+
+  const loadAdmins = useCallback(async (targetPage: number) => {
+    setLoading(true);
+    try {
+      const response = await adminApi.getAdmins(targetPage, PAGE_SIZE);
+      const items = (response.items || []).map((admin: AdminEntity) => ({
+        id: admin.id,
+        name: admin.name,
+        lastname: admin.lastname,
+        email: admin.email,
+        role:
+          admin.role?.toUpperCase() === "SUPERADMIN" ||
+          admin.role?.toUpperCase() === "SUPER_ADMIN"
+            ? ("SUPER_ADMIN" as const)
+            : ("ADMIN" as const),
+        created_at: admin.created_at,
+        updated_at: admin.updated_at,
+      }));
+
+      setUsers(items);
+      setTotal(response.total ?? items.length);
+      setTotalPages(
+        response.total_pages ??
+          Math.max(1, Math.ceil((response.total ?? items.length) / PAGE_SIZE)),
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Error al cargar la lista de administradores";
+      cyberError(message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAdmins(page);
+  }, [loadAdmins, page]);
 
   const query = filters.search.trim().toLowerCase();
 
   const filteredUsers = users.filter((user) => {
     if (
       query &&
-      !`${user.name} ${user.lastname} ${user.username}`
+      !`${user.name} ${user.lastname} ${user.email}`
         .toLowerCase()
         .includes(query)
     ) {
       return false;
     }
-    if (filters.role !== "all" && user.role !== filters.role) return false;
-    if (filters.status !== "all" && user.status !== filters.status) {
+    if (filters.role !== "all" && user.role !== filters.role) {
       return false;
     }
     return true;
   });
 
-  const pageCount = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
-  const safePage = Math.min(page, pageCount);
-  const pageUsers = filteredUsers.slice(
-    (safePage - 1) * PAGE_SIZE,
-    safePage * PAGE_SIZE,
-  );
-
   const handleFiltersChange = (next: AdminUserFilters) => {
     setFilters(next);
-    setPage(1);
   };
 
   const handlePageChange = (next: number) => {
-    setPage(Math.min(Math.max(1, next), pageCount));
+    const safePage = Math.min(Math.max(1, next), Math.max(1, totalPages));
+    setPage(safePage);
   };
 
-  const handleSubmit = (values: AdminUserFormValues) => {
+  const handleSubmit = async (values: AdminUserFormValues) => {
     if (!modal.open) return;
 
-    if (modal.mode === "create") {
-      setUsers((prev) => [
-        ...prev,
-        {
-          id: `usr-${Date.now()}`,
-          username: values.username.trim(),
+    try {
+      if (modal.mode === "create") {
+        await adminApi.createAdmin({
           name: values.name.trim(),
           lastname: values.lastname.trim(),
+          email: values.email.trim(),
+          password: values.password || "",
           role: values.role,
-          status: values.status,
-        },
-      ]);
-      cyberSuccess(
-        `Usuario creado. @${values.username.trim()} se agrego al sistema.`,
-      );
-    } else if (modal.user) {
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.id === modal.user?.id
-            ? {
-                ...user,
-                username: values.username.trim(),
-                name: values.name.trim(),
-                lastname: values.lastname.trim(),
-                role: values.role,
-                status: values.status,
-              }
-            : user,
-        ),
-      );
-      cyberSuccess(
-        `Usuario actualizado. Se guardaron los cambios de @${values.username.trim()}.`,
-      );
-    }
+        });
 
-    setModal(CLOSED_MODAL);
+        cyberSuccess(
+          `Administrador creado. ${values.name} ${values.lastname} se agregó al sistema.`,
+        );
+      } else if (modal.user) {
+        await adminApi.updateAdmin(modal.user.id, {
+          name: values.name.trim(),
+          lastname: values.lastname.trim(),
+          email: values.email.trim(),
+          ...(values.password ? { password: values.password } : {}),
+          role: values.role,
+        });
+
+        cyberSuccess(
+          `Administrador actualizado. Se guardaron los cambios de ${values.name} ${values.lastname}.`,
+        );
+      }
+
+      setModal(CLOSED_MODAL);
+      await loadAdmins(page);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Error al guardar el administrador";
+      cyberError(message);
+    }
   };
 
-  const handleToggleStatus = (user: AdminUser) => {
-    const activating = user.status === "inactive";
-
-    setUsers((prev) =>
-      prev.map((item) =>
-        item.id === user.id
-          ? { ...item, status: activating ? "active" : "inactive" }
-          : item,
-      ),
-    );
-
-    cyberSuccess(
-      activating
-        ? `Usuario activado. @${user.username} puede acceder al panel.`
-        : `Usuario desactivado. @${user.username} ya no puede acceder al panel.`,
+  const handleDeletePlaceholder = (user: AdminUser) => {
+    cyberInfo(
+      `Eliminar a ${user.name} ${user.lastname} no está disponible (funcionalidad pendiente de integración).`,
     );
   };
 
   return (
-    <RequireRole requiredRole="SUPER_ADMIN">
+
+    <RequireRole requiredRole={["SUPER_ADMIN"]}>
       <div className="flex min-h-screen flex-col px-6 py-6 lg:px-8">
         {/* ─── Header ─── */}
         <header className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <h1 className="font-display text-3xl font-semibold text-text-primary">
-              Usuarios
+              Administradores
             </h1>
             <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-neon-primary">
               Gestión del sistema :: rol requerido: super_admin
@@ -150,13 +177,13 @@ export default function AdminUsersPage() {
             className="btn-neon-primary flex items-center justify-center gap-2 rounded-sm px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-bg-primary cursor-pointer"
           >
             <PlusIcon className="h-4 w-4" />
-            Crear usuario
+            Crear administrador
           </button>
         </header>
 
         {/* ─── Panel: filtros + tabla + paginación ─── */}
         <section
-          aria-label="Lista de usuarios"
+          aria-label="Lista de administradores"
           className="overflow-hidden rounded-lg border border-white/5 bg-bg-surface"
         >
           <UsersFilterBar
@@ -165,15 +192,16 @@ export default function AdminUsersPage() {
             resultCount={filteredUsers.length}
           />
           <UsersTable
-            users={pageUsers}
+            users={filteredUsers}
+            loading={loading}
             onEdit={(user) => setModal({ open: true, mode: "edit", user })}
-            onToggleStatus={handleToggleStatus}
+            onDelete={handleDeletePlaceholder}
           />
-          {filteredUsers.length > 0 && (
+          {!loading && total > 0 && (
             <UsersPagination
-              page={safePage}
-              pageCount={pageCount}
-              total={filteredUsers.length}
+              page={page}
+              pageCount={totalPages}
+              total={total}
               pageSize={PAGE_SIZE}
               onChange={handlePageChange}
             />
@@ -186,7 +214,6 @@ export default function AdminUsersPage() {
         open={modal.open}
         mode={modal.mode}
         user={modal.user}
-        existingUsernames={users.map((user) => user.username)}
         onSubmit={handleSubmit}
         onClose={() => setModal(CLOSED_MODAL)}
       />

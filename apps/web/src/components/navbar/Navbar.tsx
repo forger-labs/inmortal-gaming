@@ -19,8 +19,8 @@ export function Navbar() {
   const [loginOpen, setLoginOpen] = useState(false);
   const { isAuthenticated, email, logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     sileo.info({ title: "Sesión cerrada", position: "top-center" });
   };
 

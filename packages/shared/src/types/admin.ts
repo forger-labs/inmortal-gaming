@@ -33,28 +33,52 @@ export type AdminUserRole = "SUPER_ADMIN" | "ADMIN";
 
 export type AdminUserStatus = "active" | "inactive";
 
-export interface AdminUser {
-  id: string;
-  username: string;
+export interface AdminEntity {
+  id: number;
   name: string;
   lastname: string;
-  role: AdminUserRole;
-  status: AdminUserStatus;
+  email: string;
+  role: AdminUserRole | string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-/** Datos editables de un usuario del panel. La contraseña nunca viaja en la
- * lista; solo se crea o actualiza desde el formulario. */
-export interface AdminUserFormValues {
-  username: string;
-  password: string;
+export interface CreateAdminDTO {
   name: string;
   lastname: string;
+  email: string;
+  password: string;
+  role: AdminUserRole | string;
+}
+
+export interface UpdateAdminDTO {
+  name?: string;
+  lastname?: string;
+  email?: string;
+  password?: string;
+  role?: AdminUserRole | string;
+}
+
+export interface AdminUser {
+  id: number | string;
+  name: string;
+  lastname: string;
+  email: string;
   role: AdminUserRole;
-  status: AdminUserStatus;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/** Datos editables de un usuario administrador del panel. */
+export interface AdminUserFormValues {
+  name: string;
+  lastname: string;
+  email: string;
+  password?: string;
+  role: AdminUserRole;
 }
 
 export interface AdminUserFilters {
   search: string;
   role: AdminUserRole | "all";
-  status: AdminUserStatus | "all";
 }

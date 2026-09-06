@@ -59,6 +59,14 @@ export interface PaginationMeta {
   hasNextPage: boolean;
 }
 
+export interface PaginatedResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
 export interface PaginatedApiResponse<T> {
   status: boolean;
   data: T | null;

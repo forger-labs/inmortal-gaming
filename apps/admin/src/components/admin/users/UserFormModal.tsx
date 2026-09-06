@@ -5,7 +5,6 @@ import type {
   AdminUser,
   AdminUserFormValues,
   AdminUserRole,
-  AdminUserStatus,
 } from "@shared/types";
 import { useFormik } from "formik";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
@@ -19,8 +18,7 @@ interface UserFormModalProps {
   open: boolean;
   mode: "create" | "edit";
   user?: AdminUser;
-  existingUsernames: string[];
-  onSubmit: (values: AdminUserFormValues) => void;
+  onSubmit: (values: AdminUserFormValues) => Promise<void> | void;
   onClose: () => void;
 }
 
@@ -31,39 +29,15 @@ export function UserFormModal({
   open,
   mode,
   user,
-  existingUsernames,
   onSubmit,
   onClose,
 }: UserFormModalProps) {
   const isEdit = mode === "edit";
-  const usernameInputRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const schema = useMemo(
     () =>
       yup.object({
-        username: yup
-          .string()
-          .trim()
-          .min(3, "Mínimo 3 caracteres")
-          .max(24, "Máximo 24 caracteres")
-          .matches(
-            /^[a-zA-Z0-9._-]+$/,
-            "Solo letras, números, punto, guion y guion bajo",
-          )
-          .test("unique", "Ese usuario ya existe", (value) => {
-            if (!value) return true;
-            const normalized = value.trim().toLowerCase();
-            return !existingUsernames.some(
-              (existing) =>
-                existing.toLowerCase() === normalized &&
-                existing !== user?.username,
-            );
-          })
-          .required("Ingresa el usuario"),
-        password: yup
-          .string()
-          .min(6, "La contraseña debe tener al menos 6 caracteres")
-          .required("Ingresa una contraseña"),
         name: yup
           .string()
           .trim()
@@ -74,30 +48,52 @@ export function UserFormModal({
           .trim()
           .min(2, "Mínimo 2 caracteres")
           .required("Ingresa el apellido"),
+        email: yup
+          .string()
+          .trim()
+          .email("Ingresa un correo electrónico válido")
+          .required("Ingresa el correo electrónico"),
+        password: isEdit
+          ? yup
+              .string()
+              .test(
+                "password-min",
+                "Mínimo 6 caracteres",
+                (val) => !val || val.length >= 6,
+              )
+          : yup
+              .string()
+              .min(6, "Mínimo 6 caracteres")
+              .required("Ingresa una contraseña"),
         role: yup
           .mixed<AdminUserRole>()
           .oneOf(["SUPER_ADMIN", "ADMIN"])
           .required("Selecciona un rol"),
-        status: yup
-          .mixed<AdminUserStatus>()
-          .oneOf(["active", "inactive"])
-          .required("Selecciona un estado"),
       }),
-    [existingUsernames, user?.username],
+    [isEdit],
   );
 
   const formik = useFormik<AdminUserFormValues>({
     initialValues: {
-      username: user?.username ?? "",
-      password: "",
       name: user?.name ?? "",
       lastname: user?.lastname ?? "",
-      role: user?.role ?? "ADMIN",
-      status: user?.status ?? "active",
+      email: user?.email ?? "",
+      password: "",
+      role:
+        user?.role?.toUpperCase() === "SUPERADMIN" ||
+        user?.role?.toUpperCase() === "SUPER_ADMIN"
+          ? "SUPER_ADMIN"
+          : "ADMIN",
     },
     validationSchema: schema,
     enableReinitialize: true,
-    onSubmit: (values) => onSubmit(values),
+    onSubmit: async (values, helpers) => {
+      try {
+        await onSubmit(values);
+      } finally {
+        helpers.setSubmitting(false);
+      }
+    },
   });
 
   // Enfoque inicial, cierre con Escape y bloqueo del scroll del fondo.
@@ -112,9 +108,7 @@ export function UserFormModal({
     document.addEventListener("keydown", handleKeyDown);
     document.body.style.overflow = "hidden";
 
-    const frame = requestAnimationFrame(() =>
-      usernameInputRef.current?.focus(),
-    );
+    const frame = requestAnimationFrame(() => nameInputRef.current?.focus());
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
@@ -163,16 +157,16 @@ export function UserFormModal({
               <header className="flex items-start justify-between gap-4 border-b border-white/5 px-6 py-5">
                 <div>
                   <span
-                    data-text="GESTIÓN DE USUARIOS"
+                    data-text="GESTIÓN DE ADMINISTRADORES"
                     className="glitch w-fit font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-neon-primary"
                   >
-                    Gestión de usuarios
+                    Gestión de administradores
                   </span>
                   <h2
                     id="user-form-title"
                     className="mt-1 font-display text-xl font-semibold text-text-primary"
                   >
-                    {isEdit ? "Editar usuario" : "Crear usuario"}
+                    {isEdit ? "Editar administrador" : "Crear administrador"}
                   </h2>
                 </div>
                 <button
@@ -193,71 +187,13 @@ export function UserFormModal({
               >
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field
-                    id="user-form-username"
-                    label="Usuario"
-                    error={
-                      formik.touched.username
-                        ? formik.errors.username
-                        : undefined
-                    }
-                  >
-                    <input
-                      id="user-form-username"
-                      ref={usernameInputRef}
-                      name="username"
-                      type="text"
-                      autoComplete="username"
-                      placeholder="ej. j.hernandez"
-                      value={formik.values.username}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      aria-invalid={
-                        formik.touched.username
-                          ? Boolean(formik.errors.username)
-                          : undefined
-                      }
-                      className={inputClass}
-                    />
-                  </Field>
-
-                  <Field
-                    id="user-form-password"
-                    label={isEdit ? "Contraseña (opcional)" : "Contraseña"}
-                    error={
-                      formik.touched.password
-                        ? formik.errors.password
-                        : undefined
-                    }
-                  >
-                    <input
-                      id="user-form-password"
-                      name="password"
-                      type="password"
-                      autoComplete={isEdit ? "new-password" : "new-password"}
-                      placeholder={
-                        isEdit
-                          ? "En blanco para mantener"
-                          : "Mínimo 6 caracteres"
-                      }
-                      value={formik.values.password}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      aria-invalid={
-                        formik.touched.password
-                          ? Boolean(formik.errors.password)
-                          : undefined
-                      }
-                      className={inputClass}
-                    />
-                  </Field>
-
-                  <Field
                     id="user-form-name"
                     label="Nombre"
                     error={formik.touched.name ? formik.errors.name : undefined}
                   >
                     <input
                       id="user-form-name"
+                      ref={nameInputRef}
                       name="name"
                       type="text"
                       autoComplete="given-name"
@@ -302,6 +238,31 @@ export function UserFormModal({
                   </Field>
 
                   <Field
+                    id="user-form-email"
+                    label="Correo electrónico"
+                    error={
+                      formik.touched.email ? formik.errors.email : undefined
+                    }
+                  >
+                    <input
+                      id="user-form-email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="ej. admin@inmortal.com"
+                      value={formik.values.email}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      aria-invalid={
+                        formik.touched.email
+                          ? Boolean(formik.errors.email)
+                          : undefined
+                      }
+                      className={inputClass}
+                    />
+                  </Field>
+
+                  <Field
                     id="user-form-role"
                     label="Rol"
                     error={formik.touched.role ? formik.errors.role : undefined}
@@ -319,25 +280,38 @@ export function UserFormModal({
                     </select>
                   </Field>
 
-                  <Field
-                    id="user-form-status"
-                    label="Estado"
-                    error={
-                      formik.touched.status ? formik.errors.status : undefined
-                    }
-                  >
-                    <select
-                      id="user-form-status"
-                      name="status"
-                      value={formik.values.status}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      className={`${inputClass} cursor-pointer`}
+                  <div className="sm:col-span-2">
+                    <Field
+                      id="user-form-password"
+                      label={isEdit ? "Contraseña (opcional)" : "Contraseña"}
+                      error={
+                        formik.touched.password
+                          ? formik.errors.password
+                          : undefined
+                      }
                     >
-                      <option value="active">Activo</option>
-                      <option value="inactive">Inactivo</option>
-                    </select>
-                  </Field>
+                      <input
+                        id="user-form-password"
+                        name="password"
+                        type="password"
+                        autoComplete={isEdit ? "new-password" : "new-password"}
+                        placeholder={
+                          isEdit
+                            ? "En blanco para mantener contraseña actual"
+                            : "Mínimo 6 caracteres"
+                        }
+                        value={formik.values.password}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        aria-invalid={
+                          formik.touched.password
+                            ? Boolean(formik.errors.password)
+                            : undefined
+                        }
+                        className={inputClass}
+                      />
+                    </Field>
+                  </div>
                 </div>
 
                 {isEdit && (
@@ -361,7 +335,11 @@ export function UserFormModal({
                     disabled={formik.isSubmitting}
                     className="btn-neon-primary flex items-center justify-center gap-2 rounded-sm px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-bg-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {isEdit ? "Guardar cambios" : "Crear usuario"}
+                    {formik.isSubmitting
+                      ? "Guardando..."
+                      : isEdit
+                        ? "Guardar cambios"
+                        : "Crear administrador"}
                   </button>
                 </div>
               </form>
