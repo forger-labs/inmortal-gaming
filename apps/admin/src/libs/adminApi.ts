@@ -8,13 +8,17 @@ import type {
   CategoryEntity,
   CreateAdminDTO,
   CreateCategoryDTO,
+  CreateProductDTO,
   CreateSubcategoryDTO,
   LoginDTO,
   PaginatedResult,
+  ProductCatalogEntity,
+  ProductEntity,
   RefreshTokenDTO,
   SubcategoryEntity,
   UpdateAdminDTO,
   UpdateCategoryDTO,
+  UpdateProductDTO,
   UpdateSubcategoryDTO,
 } from "@shared/types";
 import axios from "axios";
@@ -658,6 +662,242 @@ export default class AdminApi {
       }
 
       return data ?? { message: "Subcategoría eliminada exitosamente" };
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista paginada de productos (`GET /products`).
+   */
+  async getProducts(
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResult<ProductEntity>> {
+    const result: ApiResponse<PaginatedResult<ProductEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/products?page=${page}&limit=${limit}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<ProductEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener productos";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un producto por su identificador (`GET /products/:id`).
+   */
+  async getProductById(id: number | string): Promise<ProductEntity> {
+    const result: ApiResponse<ProductEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/products/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ProductEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el producto";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un producto por su nombre (`GET /products/name/:name`).
+   */
+  async getProductByName(name: string): Promise<ProductEntity> {
+    const result: ApiResponse<ProductEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/products/name/${encodeURIComponent(name)}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ProductEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el producto por nombre";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene el catálogo completo de un producto con subcategorías y servidores (`GET /products/:id/catalog`).
+   */
+  async getProductCatalogById(
+    id: number | string,
+  ): Promise<ProductCatalogEntity> {
+    const result: ApiResponse<ProductCatalogEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/products/${id}/catalog`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ProductCatalogEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el catálogo del producto";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Crea un nuevo producto (`POST /products`).
+   */
+  async createProduct(dto: CreateProductDTO): Promise<ProductEntity> {
+    const result: ApiResponse<ProductEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.post<CreateProductDTO>({
+        url: "/products",
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ProductEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al crear el producto";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza un producto existente (`PUT /products/:id`).
+   */
+  async updateProduct(
+    id: number | string,
+    dto: UpdateProductDTO,
+  ): Promise<ProductEntity> {
+    const result: ApiResponse<ProductEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.put({
+        url: `/products/${id}`,
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ProductEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al actualizar el producto";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina un producto (`DELETE /products/:id`).
+   */
+  async deleteProduct(id: number | string): Promise<{ message: string }> {
+    const result: ApiResponse<{ message: string }> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.delete({
+        url: `/products/${id}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<{
+        message: string;
+      }>;
+      if (!success) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al eliminar el producto";
+        throw new Error(errorMessage);
+      }
+
+      return data ?? { message: "Producto eliminado exitosamente" };
     } catch (error) {
       handleApiError(error, result);
       throw error;

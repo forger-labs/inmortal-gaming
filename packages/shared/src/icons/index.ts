@@ -13,6 +13,8 @@ export { DeleteIcon } from "./DeleteIcon";
 export { DownloadIcon } from "./DownloadIcon";
 export { EditIcon } from "./EditIcon";
 export { EmailIcon } from "./EmailIcon";
+export { GridIcon } from "./GridIcon";
+export { ListIcon } from "./ListIcon";
 export { LockIcon } from "./LockIcon";
 export { LogoutIcon } from "./LogoutIcon";
 export { MemoryIcon } from "./MemoryIcon";
