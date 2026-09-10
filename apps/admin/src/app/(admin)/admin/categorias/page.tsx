@@ -1,14 +1,16 @@
 "use client";
 
-import { CategoriesIcon } from "@shared/icons";
+import { CategoriesIcon, ProductsIcon, ServerIcon } from "@shared/icons";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { CategoriesView } from "@/components/admin/categories/CategoriesView";
+import { ProductsView } from "@/components/admin/products/ProductsView";
+import { ServersView } from "@/components/admin/servers/ServersView";
 import { SubcategoriesView } from "@/components/admin/subcategories/SubcategoriesView";
 import { RequireRole } from "@/components/RequireRole";
 
-type ActiveTab = "categories" | "subcategories";
+type ActiveTab = "categories" | "subcategories" | "servers" | "products";
 
 interface TabItem {
   key: ActiveTab;
@@ -27,11 +29,23 @@ const TAB_BUTTONS: TabItem[] = [
     label: "Subcategorias",
     icon: <CategoriesIcon className="h-4 w-4" />,
   },
+  {
+    key: "servers",
+    label: "Servidores",
+    icon: <ServerIcon className="h-4 w-4" />,
+  },
+  {
+    key: "products",
+    label: "Productos",
+    icon: <ProductsIcon className="h-4 w-4" />,
+  },
 ];
 
 const TAB_VIEWS: Record<ActiveTab, ReactNode> = {
   categories: <CategoriesView />,
   subcategories: <SubcategoriesView />,
+  servers: <ServersView />,
+  products: <ProductsView />,
 };
 
 export default function AdminCategoriesPage() {
@@ -41,7 +55,7 @@ export default function AdminCategoriesPage() {
     <RequireRole requiredRole={["SUPER_ADMIN", "ADMIN"]}>
       <div className="flex min-h-screen flex-col px-6 py-6 lg:px-8">
         {/* ─── Selector de pestañas ─── */}
-        <div className="mb-6 flex items-center gap-2 border-b border-white/10 pb-3">
+        <div className="mb-6 flex flex-wrap items-center gap-2 border-b border-white/10 pb-3">
           {TAB_BUTTONS.map((tab) => {
             const isActive = activeTab === tab.key;
             return (

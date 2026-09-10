@@ -1,6 +1,6 @@
 "use client";
 
-import { CloseIcon, ProductsIcon } from "@shared/icons";
+import { CloseIcon, PlusIcon, ProductsIcon, UploadIcon } from "@shared/icons";
 import type {
   CategoryEntity,
   ProductEntity,
@@ -28,6 +28,12 @@ interface ProductFormModalProps {
   onClose: () => void;
 }
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
 export function ProductFormModal({
   open,
   mode,
@@ -38,7 +44,10 @@ export function ProductFormModal({
 }: ProductFormModalProps) {
   const isEdit = mode === "edit";
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewError, setPreviewError] = useState(false);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const schema = useMemo(
     () =>
@@ -61,10 +70,39 @@ export function ProductFormModal({
             (val) => typeof val === "number" && val > 0,
           )
           .required("Selecciona una categoria"),
-        image: yup.string().trim().default(""),
+        image: yup
+          .mixed()
+          .test(
+            "image-required",
+            "Selecciona una imagen para el producto",
+            (val) => {
+              if (isEdit) return true;
+              if (!val) return false;
+              if (val instanceof File) return true;
+              if (typeof val === "string" && val.trim().length > 0) return true;
+              return false;
+            },
+          )
+          .test(
+            "file-type",
+            "Formato no valido (usa PNG, JPG, JPEG o WEBP)",
+            (val) => {
+              if (!val || !(val instanceof File)) return true;
+              return [
+                "image/jpeg",
+                "image/png",
+                "image/webp",
+                "image/jpg",
+              ].includes(val.type);
+            },
+          )
+          .test("file-size", "La imagen no debe superar los 5MB", (val) => {
+            if (!val || !(val instanceof File)) return true;
+            return val.size <= 5 * 1024 * 1024;
+          }),
         is_active: yup.boolean().default(true),
       }),
-    [],
+    [isEdit],
   );
 
   const formik = useFormik<ProductFormValues>({
@@ -72,7 +110,7 @@ export function ProductFormModal({
       name: product?.name ?? "",
       description: product?.description ?? "",
       category_id: product?.category_id ?? categories[0]?.id ?? "",
-      image: product?.image ?? "",
+      image: product?.image ?? null,
       is_active: product?.is_active ?? true,
     },
     validationSchema: schema,
@@ -87,15 +125,64 @@ export function ProductFormModal({
     },
   });
 
-  const previewUrl = useMemo(
-    () => getR2ImageUrl(formik.values.image),
-    [formik.values.image],
-  );
+  // Manejo de URL de vista previa para File o string
+  useEffect(() => {
+    if (formik.values.image instanceof File) {
+      const url = URL.createObjectURL(formik.values.image);
+      setFilePreview(url);
+      setPreviewError(false);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    }
+    setFilePreview(null);
+    setPreviewError(false);
+  }, [formik.values.image]);
+
+  const previewUrl = useMemo(() => {
+    if (filePreview) return filePreview;
+    if (typeof formik.values.image === "string" && formik.values.image.trim()) {
+      return getR2ImageUrl(formik.values.image);
+    }
+    if (isEdit && product?.image) {
+      return getR2ImageUrl(product.image);
+    }
+    return "";
+  }, [filePreview, formik.values.image, isEdit, product?.image]);
+
+  const handleFileSelect = (file: File | string | null) => {
+    setPreviewError(false);
+    formik.setFieldTouched("image", true, false);
+    formik.setFieldValue("image", file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFileSelect(files[0]);
+    }
+  };
 
   // Enfoque inicial, cierre con Escape y bloqueo del scroll del fondo
   useEffect(() => {
     if (!open) return;
     setPreviewError(false);
+    setIsDragging(false);
 
     const previouslyFocused = document.activeElement as HTMLElement | null;
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -114,6 +201,11 @@ export function ProductFormModal({
       previouslyFocused?.focus();
     };
   }, [open, onClose]);
+
+  const isNewFileSelected = formik.values.image instanceof File;
+  const hasExistingImage =
+    isEdit && !isNewFileSelected && Boolean(product?.image);
+  const hasImage = Boolean(previewUrl);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -210,15 +302,15 @@ export function ProductFormModal({
 
                 {/* Categoria + Estado */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field
-                    id="product-form-category"
-                    label="Categoria"
-                    error={
-                      formik.touched.category_id
-                        ? (formik.errors.category_id as string)
-                        : undefined
-                    }
-                  >
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="product-form-category"
+                        className="font-mono text-[11px] text-neon-primary/80 font-semibold uppercase tracking-wider"
+                      >
+                        Categoria
+                      </label>
+                    </div>
                     <select
                       id="product-form-category"
                       name="category_id"
@@ -239,7 +331,13 @@ export function ProductFormModal({
                         </option>
                       ))}
                     </select>
-                  </Field>
+                    {formik.touched.category_id &&
+                      Boolean(formik.errors.category_id) && (
+                        <p className="font-mono text-[11px] text-neon-pink">
+                          {formik.errors.category_id as string}
+                        </p>
+                      )}
+                  </div>
 
                   <Field
                     id="product-form-status"
@@ -295,60 +393,152 @@ export function ProductFormModal({
                   />
                 </Field>
 
-                {/* Imagen / Clave R2 */}
-                <Field
-                  id="product-form-image"
-                  label="Clave de imagen / URL (Cloudflare R2)"
-                  error={formik.touched.image ? formik.errors.image : undefined}
-                >
-                  <FormInput
+                {/* Subida de Imagen (multipart/form-data) */}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="product-form-image"
+                      className="font-mono text-[11px] font-semibold uppercase tracking-wider text-neon-primary/80"
+                    >
+                      Imagen del producto
+                    </label>
+                    <span className="font-mono text-[10px] text-text-muted">
+                      PNG, JPG, WEBP (Max. 5MB)
+                    </span>
+                  </div>
+
+                  {/* Input oculto asociado al label */}
+                  <input
+                    ref={fileInputRef}
                     id="product-form-image"
                     name="image"
-                    type="text"
-                    placeholder="ej. cyberpunk-2077.jpg o URL de imagen"
-                    value={formik.values.image}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/jpg"
+                    className="sr-only"
                     onChange={(e) => {
-                      setPreviewError(false);
-                      formik.handleChange(e);
+                      const files = e.target.files;
+                      if (files && files.length > 0) {
+                        handleFileSelect(files[0]);
+                      }
                     }}
-                    onBlur={formik.handleBlur}
-                    hasError={
-                      formik.touched.image && Boolean(formik.errors.image)
-                    }
                   />
-                </Field>
 
-                {/* Vista previa de imagen */}
-                {formik.values.image.trim() && (
-                  <div className="flex items-center gap-3 rounded-lg border border-white/5 bg-bg-primary/60 p-2.5">
-                    <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded border border-white/10 bg-bg-primary">
-                      {previewUrl && !previewError ? (
-                        <Image
-                          src={previewUrl}
-                          alt="Vista previa de imagen"
-                          fill
-                          sizes="80px"
-                          className="object-cover"
-                          onError={() => setPreviewError(true)}
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center">
-                          <ProductsIcon className="h-6 w-6 text-text-muted" />
+                  {/* Dropzone / Preview Area */}
+                  {hasImage ? (
+                    <div className="flex flex-col gap-3 rounded-lg border border-white/10 bg-bg-primary/70 p-3.5 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-md border border-neon-primary/30 bg-bg-primary shadow-[0_0_15px_rgba(0,240,255,0.15)]">
+                          {previewUrl && !previewError ? (
+                            <Image
+                              src={previewUrl}
+                              alt="Vista previa de la imagen del producto"
+                              fill
+                              sizes="80px"
+                              className="object-cover"
+                              onError={() => setPreviewError(true)}
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center">
+                              <ProductsIcon className="h-6 w-6 text-text-muted" />
+                            </div>
+                          )}
                         </div>
-                      )}
+
+                        <div className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate font-mono text-xs font-semibold text-text-primary">
+                              {isNewFileSelected
+                                ? (formik.values.image as File).name
+                                : hasExistingImage
+                                  ? product?.name || "Imagen actual"
+                                  : "Imagen seleccionada"}
+                            </span>
+                            {isNewFileSelected ? (
+                              <span className="shrink-0 rounded border border-neon-green/30 bg-neon-green/10 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-neon-green">
+                                NUEVA
+                              </span>
+                            ) : hasExistingImage ? (
+                              <span className="shrink-0 rounded border border-neon-purple/30 bg-neon-purple/10 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-neon-purple">
+                                ACTUAL
+                              </span>
+                            ) : null}
+                          </div>
+
+                          <span className="font-body text-xs text-text-muted">
+                            {isNewFileSelected
+                              ? `${formatFileSize((formik.values.image as File).size)} :: ${(formik.values.image as File).type}`
+                              : previewError
+                                ? "Error al cargar la vista previa"
+                                : "Imagen cargada desde el servidor"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end sm:self-center">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex items-center gap-1.5 rounded-sm border border-neon-primary/30 bg-neon-primary/10 px-3 py-1.5 font-mono text-xs font-semibold text-neon-primary transition-all hover:bg-neon-primary/20 cursor-pointer"
+                        >
+                          <UploadIcon className="h-3.5 w-3.5" />
+                          Cambiar
+                        </button>
+
+                        {isNewFileSelected && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (fileInputRef.current) {
+                                fileInputRef.current.value = "";
+                              }
+                              handleFileSelect(
+                                isEdit ? (product?.image ?? null) : null,
+                              );
+                            }}
+                            className="rounded-sm border border-white/10 px-3 py-1.5 font-mono text-xs font-semibold text-text-secondary transition-colors hover:border-neon-pink/30 hover:text-neon-pink cursor-pointer"
+                          >
+                            {isEdit ? "Revertir" : "Quitar"}
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="min-w-0 flex flex-col">
-                      <span className="font-mono text-[11px] font-semibold text-text-primary truncate">
-                        {formik.values.image}
+                  ) : (
+                    <label
+                      htmlFor="product-form-image"
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-all ${
+                        isDragging
+                          ? "border-neon-primary bg-neon-primary/10 shadow-[0_0_20px_rgba(0,240,255,0.2)]"
+                          : formik.touched.image && formik.errors.image
+                            ? "border-neon-pink/60 bg-neon-pink/5 hover:border-neon-pink"
+                            : "border-white/15 bg-bg-primary/40 hover:border-neon-primary/60 hover:bg-bg-primary/70"
+                      }`}
+                    >
+                      <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-neon-primary/30 bg-neon-primary/10 text-neon-primary shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+                        <UploadIcon className="h-5 w-5" />
                       </span>
-                      <span className="font-body text-[11px] text-text-muted">
-                        {previewError
-                          ? "No se pudo cargar la vista previa (se guardara la clave)"
-                          : "Vista previa cargada"}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                      <div className="flex flex-col gap-0.5">
+                        <p className="font-body text-xs font-medium text-text-primary">
+                          <span className="text-neon-primary hover:underline">
+                            Haz clic para seleccionar
+                          </span>{" "}
+                          o arrastra y suelta el archivo
+                        </p>
+                        <p className="font-mono text-[11px] text-text-muted">
+                          Soporta PNG, JPG, JPEG o WEBP (hasta 5MB)
+                        </p>
+                      </div>
+                    </label>
+                  )}
+
+                  {formik.touched.image && Boolean(formik.errors.image) && (
+                    <p className="font-mono text-[11px] text-neon-pink">
+                      {formik.errors.image as string}
+                    </p>
+                  )}
+                </div>
 
                 {/* ─── Footer ─── */}
                 <div className="mt-2 flex flex-col-reverse gap-2 border-t border-white/5 pt-4 sm:flex-row sm:justify-end">

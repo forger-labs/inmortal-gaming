@@ -1,10 +1,10 @@
-import type { ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 export interface FieldProps {
   id: string;
   label: string;
   error?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export interface FormSubmitButtonProps
@@ -28,4 +28,17 @@ export interface DangerButtonProps extends ComponentPropsWithoutRef<"button"> {
 
 export interface FormInputProps extends ComponentPropsWithoutRef<"input"> {
   hasError?: boolean;
+}
+
+export interface DeleteModalProps {
+  open: boolean;
+  title: string;
+  subtitle?: string;
+  description?: ReactNode;
+  children?: ReactNode;
+  confirmLabel?: string;
+  confirmLoadingLabel?: string;
+  id?: string;
+  onConfirm: () => Promise<void> | void;
+  onClose: () => void;
 }

@@ -99,8 +99,9 @@ Substantial changes follow Spec-Driven Development:
 - Generative tools (`generate_screen_from_text`, `edit_screens`, `update_design_system`) require OAuth 2.0 — not available with API key alone.
 - DESIGN.md is the source of truth for visual design specs.
 
-<!-- CODEGRAPH_START -->
-## CodeGraph
+## Code exploration
+
+IT IS MANDATORY
 
 In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
 
@@ -108,9 +109,11 @@ In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the re
 - **Shell** (always works): `codegraph explore "<symbol names or question>"` prints the same output.
 
 If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
-<!-- CODEGRAPH_END -->
 
+- Use gentle-engram to read context of the repo
 
 ## Check code
-To check code always use: 
-- pnpm format && pnpm build
+
+After every finished task, run:
+1. pnpm format 
+2. pnpm build

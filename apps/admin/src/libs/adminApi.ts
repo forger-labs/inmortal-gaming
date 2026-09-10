@@ -9,16 +9,19 @@ import type {
   CreateAdminDTO,
   CreateCategoryDTO,
   CreateProductDTO,
+  CreateServerDTO,
   CreateSubcategoryDTO,
   LoginDTO,
   PaginatedResult,
   ProductCatalogEntity,
   ProductEntity,
   RefreshTokenDTO,
+  ServerEntity,
   SubcategoryEntity,
   UpdateAdminDTO,
   UpdateCategoryDTO,
   UpdateProductDTO,
+  UpdateServerDTO,
   UpdateSubcategoryDTO,
 } from "@shared/types";
 import axios from "axios";
@@ -803,18 +806,38 @@ export default class AdminApi {
   }
 
   /**
-   * Crea un nuevo producto (`POST /products`).
+   * Crea un nuevo producto utilizando multipart/form-data (`POST /products`).
    */
-  async createProduct(dto: CreateProductDTO): Promise<ProductEntity> {
+  async createProduct(
+    dto: CreateProductDTO | FormData,
+  ): Promise<ProductEntity> {
     const result: ApiResponse<ProductEntity> = {
       data: null,
       success: false,
       error: null,
     };
     try {
-      const response = await this.httpClient.post<CreateProductDTO>({
+      let body: FormData;
+      if (dto instanceof FormData) {
+        body = dto;
+      } else {
+        body = new FormData();
+        body.append("name", dto.name);
+        body.append("description", dto.description);
+        body.append("category_id", String(dto.category_id));
+        if (dto.is_active !== undefined) {
+          body.append("is_active", String(dto.is_active));
+        }
+        if (dto.image instanceof File || dto.image instanceof Blob) {
+          body.append("image", dto.image);
+        } else if (typeof dto.image === "string" && dto.image) {
+          body.append("image", dto.image);
+        }
+      }
+
+      const response = await this.httpClient.post<FormData>({
         url: "/products",
-        body: dto,
+        body,
       });
 
       const { success, data, error } =
@@ -836,11 +859,11 @@ export default class AdminApi {
   }
 
   /**
-   * Actualiza un producto existente (`PUT /products/:id`).
+   * Actualiza un producto existente utilizando multipart/form-data (`PUT /products/:id`).
    */
   async updateProduct(
     id: number | string,
-    dto: UpdateProductDTO,
+    dto: UpdateProductDTO | FormData,
   ): Promise<ProductEntity> {
     const result: ApiResponse<ProductEntity> = {
       data: null,
@@ -848,9 +871,33 @@ export default class AdminApi {
       error: null,
     };
     try {
+      let body: FormData;
+      if (dto instanceof FormData) {
+        body = dto;
+      } else {
+        body = new FormData();
+        if (dto.name !== undefined) {
+          body.append("name", dto.name);
+        }
+        if (dto.description !== undefined) {
+          body.append("description", dto.description);
+        }
+        if (dto.category_id !== undefined) {
+          body.append("category_id", String(dto.category_id));
+        }
+        if (dto.is_active !== undefined) {
+          body.append("is_active", String(dto.is_active));
+        }
+        if (dto.image instanceof File || dto.image instanceof Blob) {
+          body.append("image", dto.image);
+        } else if (typeof dto.image === "string" && dto.image) {
+          body.append("image", dto.image);
+        }
+      }
+
       const response = await this.httpClient.put({
         url: `/products/${id}`,
-        body: dto,
+        body,
       });
 
       const { success, data, error } =
@@ -898,6 +945,208 @@ export default class AdminApi {
       }
 
       return data ?? { message: "Producto eliminado exitosamente" };
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista paginada de servidores (`GET /servers`).
+   */
+  async getServers(
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResult<ServerEntity>> {
+    const result: ApiResponse<PaginatedResult<ServerEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/servers?page=${page}&limit=${limit}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<ServerEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener servidores";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un servidor por su identificador (`GET /servers/:id`).
+   */
+  async getServerById(id: number | string): Promise<ServerEntity> {
+    const result: ApiResponse<ServerEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/servers/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ServerEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el servidor";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un servidor por su nombre (`GET /servers/name/:name`).
+   */
+  async getServerByName(name: string): Promise<ServerEntity> {
+    const result: ApiResponse<ServerEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/servers/name/${encodeURIComponent(name)}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ServerEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el servidor por nombre";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Crea un nuevo servidor (`POST /servers`).
+   */
+  async createServer(dto: CreateServerDTO): Promise<ServerEntity> {
+    const result: ApiResponse<ServerEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.post<CreateServerDTO>({
+        url: "/servers",
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ServerEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al crear el servidor";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza un servidor existente (`PUT /servers/:id`).
+   */
+  async updateServer(
+    id: number | string,
+    dto: UpdateServerDTO,
+  ): Promise<ServerEntity> {
+    const result: ApiResponse<ServerEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.put({
+        url: `/servers/${id}`,
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ServerEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al actualizar el servidor";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina un servidor (`DELETE /servers/:id`).
+   */
+  async deleteServer(id: number | string): Promise<{ message: string }> {
+    const result: ApiResponse<{ message: string }> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.delete({
+        url: `/servers/${id}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<{
+        message: string;
+      }>;
+      if (!success) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al eliminar el servidor";
+        throw new Error(errorMessage);
+      }
+
+      return data ?? { message: "Servidor eliminado exitosamente" };
     } catch (error) {
       handleApiError(error, result);
       throw error;

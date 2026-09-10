@@ -14,7 +14,7 @@ export interface CreateProductDTO {
   description: string;
   is_active?: boolean;
   category_id: number;
-  image?: string;
+  image?: File | Blob | string | null;
 }
 
 export interface UpdateProductDTO {
@@ -22,7 +22,7 @@ export interface UpdateProductDTO {
   description?: string;
   is_active?: boolean;
   category_id?: number;
-  image?: string;
+  image?: File | Blob | string | null;
 }
 
 export interface ProductFormValues {
@@ -30,7 +30,7 @@ export interface ProductFormValues {
   description: string;
   category_id: number | "";
   is_active: boolean;
-  image: string;
+  image?: File | Blob | string | null;
 }
 
 export interface ProductFilters {
