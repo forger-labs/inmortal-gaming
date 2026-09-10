@@ -51,6 +51,21 @@ function readStoredSession(): AdminSession | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as AdminSession;
+    const accessToken = parsed?.accessToken;
+
+    if (typeof accessToken === "string") {
+      try {
+        const jwt = jwtDecode<CustomJwtClaims>(accessToken);
+        if (!jwt?.exp) return null;
+
+        if (jwt?.exp && jwt.exp < Math.floor(Date.now() / 1000)) {
+          return null;
+        }
+      } catch {
+        return null;
+      }
+    }
+
     if (
       typeof parsed?.email !== "string" ||
       (parsed.role !== "SUPER_ADMIN" && parsed.role !== "ADMIN")

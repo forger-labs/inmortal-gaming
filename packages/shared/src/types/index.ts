@@ -2,6 +2,7 @@ export * from "./admin";
 export * from "./auth";
 export * from "./category";
 export * from "./http";
+export * from "./landing";
 export * from "./product";
 export * from "./server";
 export * from "./subcategory";

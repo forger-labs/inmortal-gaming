@@ -8,9 +8,11 @@ import type {
   CategoryEntity,
   CreateAdminDTO,
   CreateCategoryDTO,
+  CreateLandingItemDTO,
   CreateProductDTO,
   CreateServerDTO,
   CreateSubcategoryDTO,
+  LandingItemEntity,
   LoginDTO,
   PaginatedResult,
   ProductCatalogEntity,
@@ -20,6 +22,7 @@ import type {
   SubcategoryEntity,
   UpdateAdminDTO,
   UpdateCategoryDTO,
+  UpdateLandingItemDTO,
   UpdateProductDTO,
   UpdateServerDTO,
   UpdateSubcategoryDTO,
@@ -1147,6 +1150,185 @@ export default class AdminApi {
       }
 
       return data ?? { message: "Servidor eliminado exitosamente" };
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     MÓDULO LANDING PAGE (`/v1/landing`)
+     ══════════════════════════════════════════════════════════════════ */
+
+  /**
+   * Obtiene la lista paginada de items configurados para la landing page (`GET /landing`).
+   */
+  async getLandingItems(
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResult<LandingItemEntity>> {
+    const result: ApiResponse<PaginatedResult<LandingItemEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/landing?page=${page}&limit=${limit}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<LandingItemEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener los elementos de la landing";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un item de landing por ID (`GET /landing/:id`).
+   */
+  async getLandingItemById(id: number | string): Promise<LandingItemEntity> {
+    const result: ApiResponse<LandingItemEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/landing/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<LandingItemEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Elemento de landing no encontrado";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Crea un nuevo item para la landing page (`POST /landing`).
+   */
+  async createLandingItem(
+    dto: CreateLandingItemDTO,
+  ): Promise<LandingItemEntity> {
+    const result: ApiResponse<LandingItemEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.post<CreateLandingItemDTO>({
+        url: "/landing",
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<LandingItemEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al crear el elemento de la landing";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza un item existente de la landing page (`PUT /landing/:id`).
+   */
+  async updateLandingItem(
+    id: number | string,
+    dto: UpdateLandingItemDTO,
+  ): Promise<LandingItemEntity> {
+    const result: ApiResponse<LandingItemEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.put({
+        url: `/landing/${id}`,
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<LandingItemEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al actualizar el elemento de la landing";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina un item de la landing page (`DELETE /landing/:id`).
+   * No elimina la categoría ni subcategoría original referenciada.
+   */
+  async deleteLandingItem(id: number | string): Promise<{ message: string }> {
+    const result: ApiResponse<{ message: string }> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.delete({
+        url: `/landing/${id}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<{
+        message: string;
+      }>;
+      if (!success) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al eliminar el elemento de la landing";
+        throw new Error(errorMessage);
+      }
+
+      return (
+        data ?? { message: "Elemento eliminado de la landing exitosamente" }
+      );
     } catch (error) {
       handleApiError(error, result);
       throw error;

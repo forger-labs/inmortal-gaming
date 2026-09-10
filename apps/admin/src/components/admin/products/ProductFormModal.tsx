@@ -1,6 +1,6 @@
 "use client";
 
-import { CloseIcon, PlusIcon, ProductsIcon, UploadIcon } from "@shared/icons";
+import { CloseIcon, ProductsIcon, UploadIcon } from "@shared/icons";
 import type {
   CategoryEntity,
   ProductEntity,

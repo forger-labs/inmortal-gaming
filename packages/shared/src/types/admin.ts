@@ -7,7 +7,8 @@ export interface AdminNavLink {
     | "categories"
     | "orders"
     | "analytics"
-    | "users";
+    | "users"
+    | "landing";
 }
 
 export type AdminStatTone = "green" | "amber" | "muted";

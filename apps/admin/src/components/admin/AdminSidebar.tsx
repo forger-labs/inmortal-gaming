@@ -4,6 +4,7 @@ import {
   AnalyticsIcon,
   CategoriesIcon,
   DashboardIcon,
+  LandingIcon,
   LogoutIcon,
   OrdersIcon,
   ProductsIcon,
@@ -22,6 +23,7 @@ const ADMIN_LINKS: AdminNavLink[] = [
   { label: "Dashboard", href: ROUTES.admin, icon: "dashboard" },
   { label: "Productos", href: ROUTES.productos, icon: "products" },
   { label: "Categorias", href: ROUTES.categorias, icon: "categories" },
+  { label: "Landing", href: ROUTES.landing, icon: "landing" },
   { label: "Pedidos", href: ROUTES.pedidos, icon: "orders" },
   { label: "Analitica", href: ROUTES.analytics, icon: "analytics" },
   { label: "Usuarios", href: ROUTES.usuarios, icon: "users" },
@@ -37,6 +39,8 @@ function SidebarIcon({ icon }: { icon: AdminNavLink["icon"] }) {
       return <ProductsIcon className={className} />;
     case "categories":
       return <CategoriesIcon className={className} />;
+    case "landing":
+      return <LandingIcon className={className} />;
     case "orders":
       return <OrdersIcon className={className} />;
     case "analytics":

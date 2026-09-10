@@ -15,7 +15,9 @@ export interface ListHeaderProps {
   actionLabel?: string;
   actionIcon?: ReactNode;
   onAction?: () => void;
+  actionDisabled?: boolean;
   children?: ReactNode;
+  className?: string;
 }
 
 export interface TableEmptyStateProps {
