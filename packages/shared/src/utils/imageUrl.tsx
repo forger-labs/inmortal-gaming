@@ -13,15 +13,8 @@ export function getR2ImageUrl(
     return trimmed;
   }
 
-  const customBase =
-    baseUrl ||
-    (typeof process !== "undefined"
-      ? process.env?.NEXT_PUBLIC_R2_URL ||
-        process.env?.NEXT_PUBLIC_R2_PUBLIC_URL
-      : "");
-
-  if (customBase) {
-    return `${customBase.replace(/\/$/, "")}/${trimmed}`;
+  if (baseUrl) {
+    return `${baseUrl.replace(/\/$/, "")}/${trimmed}`;
   }
 
   return `/${trimmed}`;

@@ -12,6 +12,7 @@ import type {
   CreateProductDTO,
   CreateServerDTO,
   CreateSubcategoryDTO,
+  CreateSubProductDTO,
   LandingItemEntity,
   LoginDTO,
   PaginatedResult,
@@ -20,12 +21,14 @@ import type {
   RefreshTokenDTO,
   ServerEntity,
   SubcategoryEntity,
+  SubProductEntity,
   UpdateAdminDTO,
   UpdateCategoryDTO,
   UpdateLandingItemDTO,
   UpdateProductDTO,
   UpdateServerDTO,
   UpdateSubcategoryDTO,
+  UpdateSubProductDTO,
 } from "@shared/types";
 import axios from "axios";
 
@@ -1329,6 +1332,270 @@ export default class AdminApi {
       return (
         data ?? { message: "Elemento eliminado de la landing exitosamente" }
       );
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista paginada de subproductos (`GET /subproducts`).
+   */
+  async getSubproducts(
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResult<SubProductEntity>> {
+    const result: ApiResponse<PaginatedResult<SubProductEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/subproducts?page=${page}&limit=${limit}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<SubProductEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener la lista de subproductos";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un subproducto por su identificador (`GET /subproducts/:id`).
+   */
+  async getSubproductById(id: number | string): Promise<SubProductEntity> {
+    const result: ApiResponse<SubProductEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/subproducts/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<SubProductEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el subproducto";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un subproducto por su nombre (`GET /subproducts/name/:name`).
+   */
+  async getSubproductByName(name: string): Promise<SubProductEntity> {
+    const result: ApiResponse<SubProductEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/subproducts/name/${encodeURIComponent(name)}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<SubProductEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el subproducto por nombre";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Crea un nuevo subproducto utilizando multipart/form-data (`POST /subproducts`).
+   */
+  async createSubproduct(
+    dto: CreateSubProductDTO | FormData,
+  ): Promise<SubProductEntity> {
+    const result: ApiResponse<SubProductEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      let body: FormData;
+      if (dto instanceof FormData) {
+        body = dto;
+      } else {
+        body = new FormData();
+        body.append("name", dto.name);
+        body.append("sub_category_id", String(dto.sub_category_id));
+        body.append("server_id", String(dto.server_id));
+        body.append("product_id", String(dto.product_id));
+        body.append("price", String(dto.price));
+        const productDataStr =
+          typeof dto.product_data === "string"
+            ? dto.product_data
+            : JSON.stringify(dto.product_data);
+        body.append("product_data", productDataStr);
+        if (dto.is_active !== undefined) {
+          body.append("is_active", String(dto.is_active));
+        }
+        if (dto.image instanceof File || dto.image instanceof Blob) {
+          body.append("image", dto.image);
+        } else if (typeof dto.image === "string" && dto.image) {
+          body.append("image", dto.image);
+        }
+      }
+
+      const response = await this.httpClient.post({
+        url: "/subproducts",
+        body,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<SubProductEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al crear el subproducto";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza un subproducto existente utilizando multipart/form-data (`PUT /subproducts/:id`).
+   */
+  async updateSubproduct(
+    id: number | string,
+    dto: UpdateSubProductDTO | FormData,
+  ): Promise<SubProductEntity> {
+    const result: ApiResponse<SubProductEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      let body: FormData;
+      if (dto instanceof FormData) {
+        body = dto;
+      } else {
+        body = new FormData();
+        if (dto.name !== undefined) {
+          body.append("name", dto.name);
+        }
+        if (dto.sub_category_id !== undefined) {
+          body.append("sub_category_id", String(dto.sub_category_id));
+        }
+        if (dto.server_id !== undefined) {
+          body.append("server_id", String(dto.server_id));
+        }
+        if (dto.product_id !== undefined) {
+          body.append("product_id", String(dto.product_id));
+        }
+        if (dto.price !== undefined) {
+          body.append("price", String(dto.price));
+        }
+        if (dto.product_data !== undefined) {
+          const productDataStr =
+            typeof dto.product_data === "string"
+              ? dto.product_data
+              : JSON.stringify(dto.product_data);
+          body.append("product_data", productDataStr);
+        }
+        if (dto.is_active !== undefined) {
+          body.append("is_active", String(dto.is_active));
+        }
+        if (dto.image instanceof File || dto.image instanceof Blob) {
+          body.append("image", dto.image);
+        }
+      }
+
+      const response = await this.httpClient.put({
+        url: `/subproducts/${id}`,
+        body,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<SubProductEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al actualizar el subproducto";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina un subproducto (`DELETE /subproducts/:id`).
+   */
+  async deleteSubproduct(id: number | string): Promise<{ message: string }> {
+    const result: ApiResponse<{ message: string }> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.delete({
+        url: `/subproducts/${id}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<{
+        message: string;
+      }>;
+      if (!success) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al eliminar el subproducto";
+        throw new Error(errorMessage);
+      }
+
+      return data ?? { message: "Subproducto eliminado exitosamente" };
     } catch (error) {
       handleApiError(error, result);
       throw error;
