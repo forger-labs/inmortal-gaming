@@ -1,6 +1,7 @@
 "use client";
 
 import { CloseIcon, ProductsIcon } from "@shared/icons";
+import { cyberSuccess } from "@shared/toasts";
 import type {
   CategoryEntity,
   ProductEntity,
@@ -13,7 +14,6 @@ import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
-import { cyberSuccess } from "@/components/toasts/cyberToasts";
 import { EASE_OUT_EXPO } from "@/constants";
 
 interface SubproductPreviewModalProps {

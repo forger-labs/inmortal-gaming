@@ -1,6 +1,7 @@
 "use client";
 
 import { PlusIcon } from "@shared/icons";
+import { cyberError, cyberSuccess } from "@shared/toasts";
 import type {
   ProductEntity,
   ServerEntity,
@@ -15,7 +16,6 @@ import { ServersFilterBar } from "@/components/admin/servers/ServersFilterBar";
 import { ServersTable } from "@/components/admin/servers/ServersTable";
 import { ListHeader } from "@/components/commonList/ListHeader";
 import { Pagination } from "@/components/commonList/Pagination";
-import { cyberError, cyberSuccess } from "@/components/toasts/cyberToasts";
 import { adminApi } from "@/libs/adminApi";
 
 const PAGE_SIZE = 10;

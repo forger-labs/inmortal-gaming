@@ -1,12 +1,12 @@
 "use client";
 
+import { cyberError } from "@shared/toasts";
 import type { AdminUserRole } from "@shared/types";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
 
 import Forbidden from "@/components/Forbidden";
-import { cyberError } from "@/components/toasts/cyberToasts";
 import { ROUTES } from "@/constants/routes";
 import { useAuthGuard } from "../context/AuthGuardContext";
 

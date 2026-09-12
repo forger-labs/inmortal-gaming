@@ -1,10 +1,10 @@
 "use client";
 
 import { BoltIcon, CloseIcon, EmailIcon, LockIcon } from "@shared/icons";
+import { cyberError, cyberInfo, cyberSuccess } from "@shared/toasts";
 import { useFormik } from "formik";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { useEffect, useRef } from "react";
-import { sileo } from "sileo";
 import * as yup from "yup";
 
 import { EASE_OUT_EXPO } from "@/constants";
@@ -27,11 +27,10 @@ const loginSchema = yup.object({
 });
 
 function notifySoon() {
-  sileo.info({
-    title: "Disponible pronto",
-    description: "Esta funcion estara disponible proximamente.",
-    position: "top-center",
-  });
+  cyberInfo(
+    "Esta funcion estara disponible proximamente.",
+    "[DISPONIBLE PRONTO]",
+  );
 }
 
 export function LoginModal({ open, onClose }: LoginModalProps) {
@@ -46,19 +45,11 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
         await login(values.email, values.password);
         resetForm();
         onClose();
-        sileo.success({
-          title: "Sesion iniciada",
-          description: `Bienvenido, ${values.email}`,
-          position: "top-center",
-        });
+        cyberSuccess(`Bienvenido, ${values.email}`, "[SESION INICIADA]");
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : "Error al iniciar sesion";
-        sileo.error({
-          title: "Error de autenticacion",
-          description: message,
-          position: "top-center",
-        });
+        cyberError(message, "[ERROR AUTENTICACION]");
       } finally {
         setSubmitting(false);
       }
@@ -92,7 +83,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
         {open && (
           <motion.div
             key="login-modal"
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+            className="fixed inset-0 z-60 flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -110,7 +101,7 @@ export function LoginModal({ open, onClose }: LoginModalProps) {
               role="dialog"
               aria-modal="true"
               aria-labelledby="login-title"
-              className="relative w-full max-w-[440px] rounded-xl border border-neon-primary/30 bg-bg-elevated p-8 shadow-[0_0_50px_-12px_rgba(0,240,255,0.45)]"
+              className="relative w-full max-w-110 rounded-xl border border-neon-primary/30 bg-bg-elevated p-8 shadow-[0_0_50px_-12px_rgba(0,240,255,0.45)]"
               initial={{ opacity: 0, y: 16, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.97 }}

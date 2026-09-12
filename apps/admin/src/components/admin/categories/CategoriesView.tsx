@@ -1,6 +1,7 @@
 "use client";
 
 import { PlusIcon } from "@shared/icons";
+import { cyberError, cyberSuccess } from "@shared/toasts";
 import type {
   CategoryEntity,
   CategoryFilters,
@@ -14,7 +15,6 @@ import { CategoryFormModal } from "@/components/admin/categories/CategoryFormMod
 import { DeleteCategoryModal } from "@/components/admin/categories/DeleteCategoryModal";
 import { ListHeader } from "@/components/commonList/ListHeader";
 import { Pagination } from "@/components/commonList/Pagination";
-import { cyberError, cyberSuccess } from "@/components/toasts/cyberToasts";
 import { adminApi } from "@/libs/adminApi";
 
 const PAGE_SIZE = 10;

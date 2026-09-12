@@ -1,10 +1,10 @@
 "use client";
 
 import { CartIcon, DeleteIcon } from "@shared/icons";
+import { cyberInfo } from "@shared/toasts";
 import { AnimatePresence, MotionConfig } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
-import { sileo } from "sileo";
 
 import type { CartEntry } from "@/data/cart";
 import { MOCK_CART } from "@/data/cart";
@@ -32,7 +32,7 @@ export function Cart() {
 
   const clearCart = () => {
     setEntries([]);
-    sileo.info({ title: "Carrito vaciado", position: "top-center" });
+    cyberInfo("El carrito ha sido vaciado.", "[CARRITO]");
   };
 
   return (

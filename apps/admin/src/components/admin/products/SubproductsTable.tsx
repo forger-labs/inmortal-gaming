@@ -83,8 +83,7 @@ export function SubproductsTable({
         </thead>
         <tbody>
           {loading ? (
-                <SubproductsTableSkeleton />
-
+            <SubproductsTableSkeleton />
           ) : subproducts.length === 0 ? (
             <TableEmptyState
               colSpan={8}

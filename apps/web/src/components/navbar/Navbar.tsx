@@ -1,9 +1,9 @@
 "use client";
 
 import { CartIcon, CloseIcon, MenuIcon, UsersIcon } from "@shared/icons";
+import { cyberInfo } from "@shared/toasts";
 import Link from "next/link";
 import { useState } from "react";
-import { sileo } from "sileo";
 
 import { LoginModal } from "@/components/auth/LoginModal";
 import { useAuth } from "@/context/AuthContext";
@@ -21,7 +21,7 @@ export function Navbar() {
 
   const handleLogout = async () => {
     await logout();
-    sileo.info({ title: "Sesión cerrada", position: "top-center" });
+    cyberInfo("Sesion cerrada correctamente.", "[SESION]");
   };
 
   return (

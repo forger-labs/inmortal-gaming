@@ -1,6 +1,7 @@
 "use client";
 
 import { PlusIcon } from "@shared/icons";
+import { cyberError, cyberSuccess } from "@shared/toasts";
 import type {
   CategoryEntity,
   JsonShapeArrayConfig,
@@ -18,7 +19,6 @@ import { SubcategoriesTable } from "@/components/admin/subcategories/Subcategori
 import { SubcategoryFormModal } from "@/components/admin/subcategories/SubcategoryFormModal";
 import { ListHeader } from "@/components/commonList/ListHeader";
 import { Pagination } from "@/components/commonList/Pagination";
-import { cyberError, cyberSuccess } from "@/components/toasts/cyberToasts";
 import { adminApi } from "@/libs/adminApi";
 
 const PAGE_SIZE = 10;

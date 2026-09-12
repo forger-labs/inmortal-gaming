@@ -10,11 +10,11 @@ import {
   ProductsIcon,
   UsersIcon,
 } from "@shared/icons";
+import { cyberInfo } from "@shared/toasts";
 import type { AdminNavLink } from "@shared/types";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-import { cyberInfo } from "@/components/toasts/cyberToasts";
 import { ROUTES } from "@/constants/routes";
 import { useAuthGuard } from "../../context/AuthGuardContext";
 import { useAdminSidebar } from "./AdminSidebarContext";

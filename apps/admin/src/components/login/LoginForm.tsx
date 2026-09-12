@@ -1,13 +1,13 @@
 "use client";
 
 import { BoltIcon, EmailIcon, LockIcon } from "@shared/icons";
+import { cyberError, cyberSuccess } from "@shared/toasts";
 import { useFormik } from "formik";
 import type { Variants } from "framer-motion";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import * as yup from "yup";
 
-import { cyberError, cyberSuccess } from "@/components/toasts/cyberToasts";
 import { useAuthGuard } from "@/context/AuthGuardContext";
 
 const loginSchema = yup.object({

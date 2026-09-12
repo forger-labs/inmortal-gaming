@@ -1,10 +1,10 @@
 "use client";
 
 import { WalletIcon, WhatsAppIcon } from "@shared/icons";
+import { cyberError, cyberSuccess } from "@shared/toasts";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
-import { sileo } from "sileo";
 
 import { EASE_OUT_EXPO } from "@/constants";
 import type { CartEntry } from "@/data/cart";
@@ -40,18 +40,16 @@ export function CartSummary({ entries }: CartSummaryProps) {
     const rate = PROMO_CODES[code];
     if (rate) {
       setDiscountRate(rate);
-      sileo.success({
-        title: "Código aplicado",
-        description: `Descuento del ${Math.round(rate * 100)}%`,
-        position: "top-center",
-      });
+      cyberSuccess(
+        `Descuento del ${Math.round(rate * 100)}%`,
+        "[CODIGO APLICADO]",
+      );
     } else {
       setDiscountRate(0);
-      sileo.error({
-        title: "Código no válido",
-        description: "Revisa el código e inténtalo de nuevo.",
-        position: "top-center",
-      });
+      cyberError(
+        "Revisa el codigo e intentalo de nuevo.",
+        "[CODIGO NO VALIDO]",
+      );
     }
   };
 

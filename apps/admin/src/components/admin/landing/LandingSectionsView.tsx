@@ -1,6 +1,7 @@
 "use client";
 
 import { PlusIcon } from "@shared/icons";
+import { cyberError, cyberSuccess } from "@shared/toasts";
 import type {
   CategoryEntity,
   LandingFilters,
@@ -12,7 +13,6 @@ import { useCallback, useEffect, useState } from "react";
 
 import { ListHeader } from "@/components/commonList/ListHeader";
 import { Pagination } from "@/components/commonList/Pagination";
-import { cyberError, cyberSuccess } from "@/components/toasts/cyberToasts";
 import { adminApi } from "@/libs/adminApi";
 import { DeleteLandingModal } from "./DeleteLandingModal";
 import { LandingFilterBar } from "./LandingFilterBar";

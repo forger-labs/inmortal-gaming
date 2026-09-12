@@ -1,6 +1,7 @@
 "use client";
 
 import { PlusIcon } from "@shared/icons";
+import { cyberError, cyberInfo, cyberSuccess } from "@shared/toasts";
 import type {
   AdminEntity,
   AdminUser,
@@ -15,11 +16,6 @@ import { UsersTable } from "@/components/admin/users/UsersTable";
 import { ListHeader } from "@/components/commonList/ListHeader";
 import { Pagination } from "@/components/commonList/Pagination";
 import { RequireRole } from "@/components/RequireRole";
-import {
-  cyberError,
-  cyberInfo,
-  cyberSuccess,
-} from "@/components/toasts/cyberToasts";
 import { adminApi } from "@/libs/adminApi";
 
 const PAGE_SIZE = 10;

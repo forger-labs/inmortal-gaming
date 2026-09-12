@@ -1,11 +1,7 @@
+import type { LandingItemEntity } from "@shared/types";
+
 export interface ProductSliderProps {
-  /** Section id used for anchor links */
-  id: string;
-  title: string;
-  description?: string;
-  /** Category value used in the catalog query: /catalogo?categoria=<category> */
-  category?: string;
-  products: ProductDisplay[];
+  item: LandingItemEntity;
 }
 
 export interface ProductDisplay extends Product {

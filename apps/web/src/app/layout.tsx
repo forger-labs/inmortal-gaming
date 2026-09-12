@@ -1,6 +1,6 @@
+import { CyberToaster } from "@shared/toasts";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
-import { Toaster } from "sileo";
 import "./globals.css";
 
 import { Footer } from "@/components/footer/Footer";
@@ -55,7 +55,7 @@ export default function RootLayout({
 
           {children}
           <Footer />
-          <Toaster theme="dark" position="top-center" />
+          <CyberToaster />
         </AuthProvider>
       </body>
     </html>

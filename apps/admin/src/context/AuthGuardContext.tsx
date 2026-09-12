@@ -1,5 +1,6 @@
 "use client";
 
+import { CyberToaster } from "@shared/toasts";
 import type { AdminUserRole } from "@shared/types";
 import { jwtDecode } from "@shared/utils";
 import type { ReactNode } from "react";
@@ -10,7 +11,6 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Toaster } from "react-hot-toast";
 
 import { LOCAL_STORAGE_KEYS } from "@/constants";
 import { adminApi } from "@/libs/adminApi";
@@ -160,7 +160,7 @@ export function AuthGuardProvider({ children }: { children: ReactNode }) {
       value={{ session, sessionReady, signIn, signOut, hasRole }}
     >
       {children}
-      <Toaster position="top-right" />
+      <CyberToaster />
     </AuthGuardContext.Provider>
   );
 }

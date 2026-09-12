@@ -1,6 +1,7 @@
 "use client";
 
 import { PlusIcon, ServerIcon } from "@shared/icons";
+import { cyberError, cyberSuccess } from "@shared/toasts";
 import type {
   CategoryEntity,
   ProductEntity,
@@ -18,7 +19,6 @@ import { ProductsFilterBar } from "@/components/admin/products/ProductsFilterBar
 import { ProductsTable } from "@/components/admin/products/ProductsTable";
 import { ServerFormModal } from "@/components/admin/servers/ServerFormModal";
 import { Pagination } from "@/components/commonList/Pagination";
-import { cyberError, cyberSuccess } from "@/components/toasts/cyberToasts";
 import { adminApi } from "@/libs/adminApi";
 import type { ProductViewMode } from "@/types/products";
 
