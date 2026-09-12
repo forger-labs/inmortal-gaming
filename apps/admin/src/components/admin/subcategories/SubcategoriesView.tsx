@@ -3,7 +3,9 @@
 import { PlusIcon } from "@shared/icons";
 import type {
   CategoryEntity,
+  JsonShapeArrayConfig,
   JsonShapeMap,
+  JsonShapeStringConfig,
   SubcategoryEntity,
   SubcategoryFilters,
   SubcategoryFormValues,
@@ -123,8 +125,37 @@ export function SubcategoriesView() {
     try {
       const shape: JsonShapeMap = {};
       for (const field of values.fields) {
-        if (field.key.trim()) {
-          shape[field.key.trim()] = field.type;
+        const key = field.key.trim();
+        if (!key) continue;
+
+        if (field.field_type === "string") {
+          const config: JsonShapeStringConfig = {
+            field_type: "string",
+            title_tag: field.title_tag || "h2",
+            tag: field.tag || "p",
+          };
+          if (field.title_font_weight?.trim()) {
+            config.title_font_weight = field.title_font_weight.trim();
+          }
+          if (field.data_weight?.trim()) {
+            config.data_weight = field.data_weight.trim();
+          }
+          shape[key] = config;
+        } else if (field.field_type === "array") {
+          const config: JsonShapeArrayConfig = {
+            field_type: "array",
+            title_tag: field.title_tag || "h2",
+          };
+          if (typeof field.ordered === "boolean") {
+            config.ordered = field.ordered;
+          }
+          if (field.title_font_weight?.trim()) {
+            config.title_font_weight = field.title_font_weight.trim();
+          }
+          if (field.data_weight?.trim()) {
+            config.data_weight = field.data_weight.trim();
+          }
+          shape[key] = config;
         }
       }
 

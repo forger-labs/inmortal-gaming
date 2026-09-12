@@ -6,3 +6,4 @@ export * from "./landing";
 export * from "./product";
 export * from "./server";
 export * from "./subcategory";
+export * from "./subproduct";

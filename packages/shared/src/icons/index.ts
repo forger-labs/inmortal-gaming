@@ -14,6 +14,7 @@ export { DeleteIcon } from "./DeleteIcon";
 export { DownloadIcon } from "./DownloadIcon";
 export { EditIcon } from "./EditIcon";
 export { EmailIcon } from "./EmailIcon";
+export { EyeIcon } from "./EyeIcon";
 export { GridIcon } from "./GridIcon";
 export { LandingIcon } from "./LandingIcon";
 export { ListIcon } from "./ListIcon";

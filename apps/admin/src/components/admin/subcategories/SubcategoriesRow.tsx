@@ -51,15 +51,21 @@ export function SubcategoriesRow({
               Sin campos
             </span>
           ) : (
-            shapeEntries.slice(0, 3).map(([key, type]) => (
-              <span
-                key={key}
-                className="inline-flex items-center gap-1 rounded bg-bg-primary border border-white/10 px-2 py-0.5 font-mono text-[11px] text-text-secondary"
-              >
-                <span className="text-text-primary">{key}:</span>
-                <span className="text-neon-primary/90">{type}</span>
-              </span>
-            ))
+            shapeEntries.slice(0, 3).map(([key, config]) => {
+              const fieldType =
+                typeof config === "object" && config !== null
+                  ? (config as { field_type?: string }).field_type || "campo"
+                  : String(config);
+              return (
+                <span
+                  key={key}
+                  className="inline-flex items-center gap-1 rounded bg-bg-primary border border-white/10 px-2 py-0.5 font-mono text-[11px] text-text-secondary"
+                >
+                  <span className="text-text-primary">{key}:</span>
+                  <span className="text-neon-primary/90">{fieldType}</span>
+                </span>
+              );
+            })
           )}
           {shapeEntries.length > 3 && (
             <span className="inline-flex items-center rounded bg-white/5 border border-white/10 px-1.5 py-0.5 font-mono text-[10px] text-text-muted">
