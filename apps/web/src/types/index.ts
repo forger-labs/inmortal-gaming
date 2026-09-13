@@ -1,5 +1,6 @@
 /* ─── Inmortal Gaming — Shared Types ─── */
 export * from "./products";
+export * from "./subproduct";
 
 export interface NavLink {
   label: string;

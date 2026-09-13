@@ -4,12 +4,15 @@ import HttpClient, {
 import type {
   ApiResponse,
   AuthTokens,
+  CategoryEntity,
   LandingItemEntity,
   LoginDTO,
   PaginatedResult,
   ProductCatalogEntity,
   ProductEntity,
   RefreshTokenDTO,
+  ServerEntity,
+  SubcategoryEntity,
   SubProductEntity,
 } from "@shared/types";
 import axios from "axios";
@@ -165,6 +168,207 @@ export default class WebApi {
             ? error
             : (error as { message?: string })?.message ||
               "Error al obtener el catalogo del producto";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un producto individual por su ID (`GET /products/:id`).
+   */
+  async getProductById(id: number | string): Promise<ProductEntity> {
+    const result: ApiResponse<ProductEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/products/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ProductEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el producto";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un subproducto individual por su ID (`GET /subproducts/:id`).
+   */
+  async getSubproductById(id: number | string): Promise<SubProductEntity> {
+    const result: ApiResponse<SubProductEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/subproducts/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<SubProductEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el subproducto";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene una categoria por su ID (`GET /categories/:id`).
+   */
+  async getCategoryById(id: number | string): Promise<CategoryEntity> {
+    const result: ApiResponse<CategoryEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/categories/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<CategoryEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener la categoria";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene una subcategoria por su ID (`GET /subcategories/:id`).
+   */
+  async getSubcategoryById(id: number | string): Promise<SubcategoryEntity> {
+    const result: ApiResponse<SubcategoryEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/subcategories/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<SubcategoryEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener la subcategoria";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un servidor por su ID (`GET /servers/:id`).
+   */
+  async getServerById(id: number | string): Promise<ServerEntity> {
+    const result: ApiResponse<ServerEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/servers/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ServerEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el servidor";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista de servidores con filtros (`GET /servers`).
+   */
+  async getServers(
+    page = 1,
+    limit = 50,
+    productId?: number | string,
+  ): Promise<PaginatedResult<ServerEntity>> {
+    const result: ApiResponse<PaginatedResult<ServerEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const productParam =
+        productId !== undefined && productId !== 0 && productId !== "0"
+          ? `&product_id=${productId}`
+          : "";
+      const response = await this.httpClient.get({
+        url: `/servers?page=${page}&limit=${limit}${productParam}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<ServerEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener servidores";
         throw new Error(errorMessage);
       }
 

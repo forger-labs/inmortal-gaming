@@ -69,8 +69,6 @@ export function ProductSubproductCard({
           {subproduct.name}
         </h4>
 
-
-
         {/* Bottom bar: Price & CTA */}
         <div className="mt-auto flex items-center justify-between border-t border-border-subtle pt-3">
           <div>

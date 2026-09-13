@@ -1,3 +1,7 @@
+import type { ProductEntity } from "./product";
+import type { ServerEntity } from "./server";
+import type { SubcategoryEntity } from "./subcategory";
+
 export interface SubProductStringFieldData {
   title: string;
   data: string;
@@ -77,4 +81,15 @@ export interface SubProductFilters {
   min_price: string;
   max_price: string;
   status: "ALL" | "ACTIVE" | "INACTIVE";
+}
+
+export interface GetSubProductByIdRequest {
+  id: number | string;
+}
+
+export interface SubProductDetailEntity extends SubProductEntity {
+  product?: ProductEntity | null;
+  subcategory?: SubcategoryEntity | null;
+  server?: ServerEntity | null;
+  availableServers?: ServerEntity[];
 }
