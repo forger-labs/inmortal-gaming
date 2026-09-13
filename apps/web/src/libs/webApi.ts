@@ -7,6 +7,7 @@ import type {
   LandingItemEntity,
   LoginDTO,
   PaginatedResult,
+  ProductCatalogEntity,
   ProductEntity,
   RefreshTokenDTO,
   SubProductEntity,
@@ -132,6 +133,38 @@ export default class WebApi {
             ? error
             : (error as { message?: string })?.message ||
               "Error al obtener subproductos";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene el catalogo detallado de un producto por su ID (`GET /products/:id/catalog`).
+   */
+  async getProductCatalog(id: number | string): Promise<ProductCatalogEntity> {
+    const result: ApiResponse<ProductCatalogEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/products/${id}/catalog`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ProductCatalogEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el catalogo del producto";
         throw new Error(errorMessage);
       }
 

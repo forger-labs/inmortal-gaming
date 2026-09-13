@@ -2,6 +2,7 @@ import { CartIcon } from "@shared/icons";
 import Image from "next/image";
 import Link from "next/link";
 
+import { ROUTES } from "@/constants";
 import type { ProductDisplay } from "@/types";
 
 const STOCK_STYLES: Record<
@@ -31,15 +32,25 @@ const CATEGORY_COLORS: Record<ProductDisplay["categoryColor"], string> = {
 
 interface ProductCardProps {
   product: ProductDisplay;
+  itemType?: "product" | "subproduct";
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, itemType }: ProductCardProps) {
   const stock = STOCK_STYLES[product.stockStatus];
   const categoryColor = CATEGORY_COLORS[product.categoryColor];
 
+  const isSubproduct =
+    itemType === "subproduct" ||
+    product.itemType === "subproduct" ||
+    product.displayCategory?.toLowerCase() === "subproducto";
+
+  const href = isSubproduct
+    ? ROUTES.subproduct(product.id)
+    : ROUTES.product(product.id);
+
   return (
     <Link
-      href={`/catalogo/${product.id}`}
+      href={href}
       className="group flex cursor-pointer flex-col overflow-hidden rounded-lg border-l border-neon-primary bg-bg-surface shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] transition-all duration-200 hover:-translate-y-0.5"
     >
       {/* Image */}

@@ -45,6 +45,7 @@ export interface CatalogSubProduct {
   price: number;
   product_data: Record<string, unknown>;
   is_active: boolean;
+  image?: string;
 }
 
 export interface CatalogServer {

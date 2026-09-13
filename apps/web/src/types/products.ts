@@ -9,6 +9,8 @@ export interface ProductDisplay extends Product {
   displayCategory: string;
   /** Color token del label */
   categoryColor: "neon-purple" | "neon-pink" | "neon-green" | "neon-amber";
+  /** Tipo explicito del item para enrutamiento */
+  itemType?: "product" | "subproduct";
 }
 
 export type ProductCategory =

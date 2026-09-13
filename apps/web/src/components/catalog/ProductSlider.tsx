@@ -67,6 +67,7 @@ export function ProductSlider({ item }: ProductSliderProps) {
               price: rawPrice,
               stockStatus: subProduct.is_active ? "available" : "out-of-stock",
               image: getR2ImageUrl(subProduct.image),
+              itemType: "subproduct",
             };
           });
         } else if (categoryId !== 0 && Number(categoryId) !== 0) {
@@ -82,6 +83,7 @@ export function ProductSlider({ item }: ProductSliderProps) {
             price: 0,
             stockStatus: prod.is_active ? "available" : "out-of-stock",
             image: getR2ImageUrl(prod.image),
+            itemType: "product",
           }));
         }
 
