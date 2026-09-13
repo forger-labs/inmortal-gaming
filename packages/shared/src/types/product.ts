@@ -39,6 +39,11 @@ export interface ProductFilters {
   status: "ALL" | "ACTIVE" | "INACTIVE";
 }
 
+export interface CatalogServerDTO {
+  id: number;
+  server_name: string;
+}
+
 export interface CatalogSubProduct {
   id: number;
   name: string;
@@ -46,18 +51,20 @@ export interface CatalogSubProduct {
   product_data: Record<string, unknown>;
   is_active: boolean;
   image?: string;
+  servers?: CatalogServerDTO[];
 }
 
 export interface CatalogServer {
   id: number;
   server_name: string;
-  sub_products: CatalogSubProduct[];
+  sub_products?: CatalogSubProduct[];
 }
 
 export interface CatalogSubcategory {
   id: number;
   subcategory_name: string;
-  servers: CatalogServer[];
+  subproducts?: CatalogSubProduct[];
+  servers?: CatalogServer[];
 }
 
 export interface ProductCatalogEntity {
@@ -68,4 +75,5 @@ export interface ProductCatalogEntity {
   image: string;
   category: CategoryEntity;
   subcategories: CatalogSubcategory[];
+  servers?: CatalogServerDTO[];
 }

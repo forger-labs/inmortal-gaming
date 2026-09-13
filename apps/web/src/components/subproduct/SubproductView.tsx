@@ -8,7 +8,7 @@ import type {
   SubProductEntity,
 } from "@shared/types";
 import { MotionConfig, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { EASE_OUT_EXPO } from "@/constants";
 import { webApi } from "@/libs/webApi";
@@ -34,6 +34,16 @@ const pageVariants = {
   },
 };
 
+function deduplicateServers(servers: ServerEntity[]): ServerEntity[] {
+  const map = new Map<number, ServerEntity>();
+  for (const s of servers) {
+    if (s && typeof s.id === "number" && !map.has(s.id)) {
+      map.set(s.id, s);
+    }
+  }
+  return Array.from(map.values());
+}
+
 export function SubproductView({ subproductId }: SubproductViewProps) {
   const [subproduct, setSubproduct] = useState<SubProductEntity | null>(null);
   const [subcategory, setSubcategory] = useState<SubcategoryEntity | null>(
@@ -41,8 +51,8 @@ export function SubproductView({ subproductId }: SubproductViewProps) {
   );
   const [product, setProduct] = useState<ProductEntity | null>(null);
   const [category, setCategory] = useState<CategoryEntity | null>(null);
-  const [server, setServer] = useState<ServerEntity | null>(null);
-  const [availableServers, setAvailableServers] = useState<ServerEntity[]>([]);
+  const [assignedServers, setAssignedServers] = useState<ServerEntity[]>([]);
+  const [selectedServerId, setSelectedServerId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,12 +65,19 @@ export function SubproductView({ subproductId }: SubproductViewProps) {
       setError(null);
 
       try {
-        // 1. Obtener datos del subproducto
+        // 1. Obtener datos del subproducto (contiene server_ids: number[])
         const subData = await webApi.getSubproductById(subproductId);
         if (isCancelled) return;
         setSubproduct(subData);
 
-        // 2. Cargar en paralelo entidades relacionadas (subcategoria con json_shape, servidor, producto padre)
+        const serverIds = Array.from(new Set(subData.server_ids || []));
+        if (serverIds.length > 0) {
+          setSelectedServerId((prev) =>
+            prev !== null && serverIds.includes(prev) ? prev : serverIds[0],
+          );
+        }
+
+        // 2. Cargar en paralelo entidades relacionadas (subcategoria con json_shape, servidores, producto padre)
         const promises: Promise<void>[] = [];
 
         if (subData.sub_category_id) {
@@ -82,19 +99,6 @@ export function SubproductView({ subproductId }: SubproductViewProps) {
               })
               .catch(() => {
                 // Silently fallback if subcategory endpoint fails
-              }),
-          );
-        }
-
-        if (subData.server_id) {
-          promises.push(
-            webApi
-              .getServerById(subData.server_id)
-              .then((srv) => {
-                if (!isCancelled) setServer(srv);
-              })
-              .catch(() => {
-                // Silently fallback if server endpoint fails
               }),
           );
         }
@@ -125,15 +129,60 @@ export function SubproductView({ subproductId }: SubproductViewProps) {
 
           promises.push(
             webApi
-              .getServers(1, 50, subData.product_id)
+              .getServers(1, 100, subData.product_id)
               .then((srvList) => {
                 if (!isCancelled && srvList?.items) {
-                  setAvailableServers(srvList.items);
+                  const productServers = srvList.items;
+                  const matched = productServers.filter((s) =>
+                    serverIds.includes(s.id),
+                  );
+                  if (matched.length > 0) {
+                    setAssignedServers(deduplicateServers(matched));
+                  } else {
+                    // Fallback to fetching individual servers if they are outside the product filter
+                    Promise.all(
+                      serverIds.map((id) =>
+                        webApi.getServerById(id).catch(() => null),
+                      ),
+                    ).then((individual) => {
+                      if (!isCancelled) {
+                        const valid = individual.filter(
+                          (s): s is ServerEntity => s !== null,
+                        );
+                        setAssignedServers(deduplicateServers(valid));
+                      }
+                    });
+                  }
                 }
               })
               .catch(() => {
-                // Silently fallback if server list fails
+                // Fallback fetching servers individually
+                Promise.all(
+                  serverIds.map((id) =>
+                    webApi.getServerById(id).catch(() => null),
+                  ),
+                ).then((individual) => {
+                  if (!isCancelled) {
+                    const valid = individual.filter(
+                      (s): s is ServerEntity => s !== null,
+                    );
+                    setAssignedServers(deduplicateServers(valid));
+                  }
+                });
               }),
+          );
+        } else if (serverIds.length > 0) {
+          promises.push(
+            Promise.all(
+              serverIds.map((id) => webApi.getServerById(id).catch(() => null)),
+            ).then((individual) => {
+              if (!isCancelled) {
+                const valid = individual.filter(
+                  (s): s is ServerEntity => s !== null,
+                );
+                setAssignedServers(deduplicateServers(valid));
+              }
+            }),
           );
         }
 
@@ -168,6 +217,10 @@ export function SubproductView({ subproductId }: SubproductViewProps) {
       .getSubproductById(subproductId)
       .then(async (subData) => {
         setSubproduct(subData);
+        const serverIds = Array.from(new Set(subData.server_ids || []));
+        if (serverIds.length > 0) {
+          setSelectedServerId(serverIds[0]);
+        }
         if (subData.sub_category_id) {
           webApi
             .getSubcategoryById(subData.sub_category_id)
@@ -180,12 +233,6 @@ export function SubproductView({ subproductId }: SubproductViewProps) {
                 } catch {}
               }
             })
-            .catch(() => {});
-        }
-        if (subData.server_id) {
-          webApi
-            .getServerById(subData.server_id)
-            .then(setServer)
             .catch(() => {});
         }
         if (subData.product_id) {
@@ -202,9 +249,14 @@ export function SubproductView({ subproductId }: SubproductViewProps) {
             })
             .catch(() => {});
           webApi
-            .getServers(1, 50, subData.product_id)
+            .getServers(1, 100, subData.product_id)
             .then((res) => {
-              if (res?.items) setAvailableServers(res.items);
+              if (res?.items) {
+                const matched = res.items.filter((s) =>
+                  serverIds.includes(s.id),
+                );
+                setAssignedServers(deduplicateServers(matched));
+              }
             })
             .catch(() => {});
         }
@@ -218,6 +270,14 @@ export function SubproductView({ subproductId }: SubproductViewProps) {
       })
       .finally(() => setLoading(false));
   };
+
+  const selectedServer = useMemo(
+    () =>
+      assignedServers.find((s) => s.id === selectedServerId) ??
+      assignedServers[0] ??
+      null,
+    [assignedServers, selectedServerId],
+  );
 
   if (loading) {
     return <SubproductSkeleton />;
@@ -261,9 +321,9 @@ export function SubproductView({ subproductId }: SubproductViewProps) {
               />
 
               <SubproductServers
-                currentServer={server}
-                availableServers={availableServers}
-                serverId={subproduct.server_id}
+                assignedServers={assignedServers}
+                selectedServerId={selectedServerId}
+                onSelectServer={setSelectedServerId}
               />
             </div>
 
@@ -283,7 +343,7 @@ export function SubproductView({ subproductId }: SubproductViewProps) {
 
               <SubproductActions
                 subproduct={subproduct}
-                serverName={server?.server_name}
+                selectedServer={selectedServer}
               />
             </div>
           </div>

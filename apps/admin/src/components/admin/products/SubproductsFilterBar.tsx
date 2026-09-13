@@ -3,6 +3,7 @@
 import { CloseIcon, GridIcon, ListIcon, SearchIcon } from "@shared/icons";
 import type {
   ProductEntity,
+  ServerEntity,
   SubcategoryEntity,
   SubProductFilters,
 } from "@shared/types";
@@ -14,6 +15,7 @@ interface SubproductsFilterBarProps {
   onChange: (filters: SubProductFilters) => void;
   products: ProductEntity[];
   subcategories: SubcategoryEntity[];
+  servers?: ServerEntity[];
   viewMode: ProductViewMode;
   onViewModeChange: (mode: ProductViewMode) => void;
   resultCount: number;
@@ -23,6 +25,7 @@ const hasActiveFilters = (filters: SubProductFilters) =>
   filters.search.trim() !== "" ||
   filters.product_id !== "ALL" ||
   filters.sub_category_id !== "ALL" ||
+  filters.server_id !== "ALL" ||
   filters.min_price !== "" ||
   filters.max_price !== "" ||
   filters.status !== "ALL";
@@ -31,6 +34,7 @@ const resetFilters = (): SubProductFilters => ({
   search: "",
   product_id: "ALL",
   sub_category_id: "ALL",
+  server_id: "ALL",
   min_price: "",
   max_price: "",
   status: "ALL",
@@ -41,6 +45,7 @@ export function SubproductsFilterBar({
   onChange,
   products,
   subcategories,
+  servers = [],
   viewMode,
   onViewModeChange,
   resultCount,
@@ -52,7 +57,7 @@ export function SubproductsFilterBar({
       {/* ─── Fila Superior de Filtros ─── */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-12 md:items-end">
         {/* Busqueda por nombre */}
-        <div className="flex flex-col gap-1.5 md:col-span-4">
+        <div className="flex flex-col gap-1.5 md:col-span-3">
           <div className="flex items-center justify-between">
             <label
               htmlFor="subproducts-search"
@@ -71,7 +76,7 @@ export function SubproductsFilterBar({
             <input
               id="subproducts-search"
               type="search"
-              placeholder="Buscar por nombre de subproducto..."
+              placeholder="Buscar por nombre..."
               value={filters.search}
               onChange={(event) =>
                 onChange({ ...filters, search: event.target.value })
@@ -113,7 +118,7 @@ export function SubproductsFilterBar({
         </div>
 
         {/* Filtro por Subcategoria */}
-        <div className="flex flex-col gap-1.5 md:col-span-3">
+        <div className="flex flex-col gap-1.5 md:col-span-2">
           <label
             htmlFor="subproducts-filter-subcategory"
             className="font-mono text-[11px] font-semibold uppercase tracking-wider text-text-secondary"
@@ -134,10 +139,41 @@ export function SubproductsFilterBar({
             }
             className="w-full cursor-pointer rounded-md border border-white/10 bg-bg-primary px-3 py-2.5 font-body text-sm text-text-primary transition-all focus:border-neon-primary focus:outline-none focus:ring-1 focus:ring-neon-primary"
           >
-            <option value="ALL">Todas las subcategorias</option>
+            <option value="ALL">Todas</option>
             {subcategories.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.subcategory_name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Filtro por Servidor */}
+        <div className="flex flex-col gap-1.5 md:col-span-2">
+          <label
+            htmlFor="subproducts-filter-server"
+            className="font-mono text-[11px] font-semibold uppercase tracking-wider text-text-secondary"
+          >
+            Servidor
+          </label>
+          <select
+            id="subproducts-filter-server"
+            value={filters.server_id}
+            onChange={(event) =>
+              onChange({
+                ...filters,
+                server_id:
+                  event.target.value === "ALL"
+                    ? "ALL"
+                    : Number(event.target.value),
+              })
+            }
+            className="w-full cursor-pointer rounded-md border border-white/10 bg-bg-primary px-3 py-2.5 font-body text-sm text-text-primary transition-all focus:border-neon-primary focus:outline-none focus:ring-1 focus:ring-neon-primary"
+          >
+            <option value="ALL">Todos</option>
+            {servers.map((srv) => (
+              <option key={srv.id} value={srv.id}>
+                {srv.server_name}
               </option>
             ))}
           </select>

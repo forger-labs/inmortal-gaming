@@ -26,7 +26,7 @@ export interface SubProductEntity {
   id: number;
   name: string;
   sub_category_id: number;
-  server_id: number;
+  server_ids: number[];
   product_id: number;
   price: number;
   product_data: SubProductDataMap;
@@ -37,7 +37,7 @@ export interface SubProductEntity {
 export interface CreateSubProductDTO {
   name: string;
   sub_category_id: number;
-  server_id: number;
+  server_ids: number[];
   product_id: number;
   price: number;
   product_data: SubProductDataMap | string;
@@ -48,7 +48,7 @@ export interface CreateSubProductDTO {
 export interface UpdateSubProductDTO {
   name?: string;
   sub_category_id?: number;
-  server_id?: number;
+  server_ids?: number[];
   product_id?: number;
   price?: number;
   product_data?: SubProductDataMap | string;
@@ -59,7 +59,7 @@ export interface UpdateSubProductDTO {
 export interface SubProductFormValues {
   name: string;
   sub_category_id: number | "";
-  server_id: number | "";
+  server_ids: number[];
   product_id: number | "";
   price: number | "";
   is_active: boolean;
@@ -78,6 +78,7 @@ export interface SubProductFilters {
   search: string;
   product_id: number | "ALL";
   sub_category_id: number | "ALL";
+  server_id: number | "ALL";
   min_price: string;
   max_price: string;
   status: "ALL" | "ACTIVE" | "INACTIVE";
@@ -90,6 +91,6 @@ export interface GetSubProductByIdRequest {
 export interface SubProductDetailEntity extends SubProductEntity {
   product?: ProductEntity | null;
   subcategory?: SubcategoryEntity | null;
-  server?: ServerEntity | null;
+  servers?: ServerEntity[];
   availableServers?: ServerEntity[];
 }

@@ -110,6 +110,7 @@ export default class WebApi {
     page = 1,
     limit = 10,
     subcategoryId?: number | string,
+    serverId?: number | string,
   ): Promise<PaginatedResult<SubProductEntity>> {
     const result: ApiResponse<PaginatedResult<SubProductEntity>> = {
       data: null,
@@ -123,8 +124,12 @@ export default class WebApi {
         subcategoryId !== "0"
           ? `&sub_category_id=${subcategoryId}`
           : "";
+      const serverParam =
+        serverId !== undefined && serverId !== 0 && serverId !== "0"
+          ? `&server_id=${serverId}`
+          : "";
       const response = await this.httpClient.get({
-        url: `/subproducts?page=${page}&limit=${limit}${subcategoryParam}`,
+        url: `/subproducts?page=${page}&limit=${limit}${subcategoryParam}${serverParam}`,
       });
 
       const { success, data, error } = response.data as ApiResponse<

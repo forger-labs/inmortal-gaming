@@ -8,11 +8,13 @@ import { ROUTES } from "@/constants";
 
 interface ProductSubproductCardProps {
   subproduct: CatalogSubProduct;
+  selectedServerId?: number | "all";
   serverName?: string;
 }
 
 export function ProductSubproductCard({
   subproduct,
+  selectedServerId,
   serverName,
 }: ProductSubproductCardProps) {
   const imageUrl = getR2ImageUrl(subproduct.image);
@@ -20,6 +22,19 @@ export function ProductSubproductCard({
     typeof subproduct.price === "number"
       ? subproduct.price.toFixed(2)
       : Number(subproduct.price || 0).toFixed(2);
+
+  const displayServerBadge = (() => {
+    if (serverName) return serverName;
+    if (!subproduct.servers || subproduct.servers.length === 0) return null;
+    if (typeof selectedServerId === "number") {
+      const matched = subproduct.servers.find((s) => s.id === selectedServerId);
+      if (matched) return matched.server_name;
+    }
+    if (subproduct.servers.length === 1) {
+      return subproduct.servers[0].server_name;
+    }
+    return `${subproduct.servers.length} Servidores`;
+  })();
 
   return (
     <Link
@@ -55,9 +70,9 @@ export function ProductSubproductCard({
             {subproduct.is_active ? "Disponible" : "Agotado"}
           </span>
 
-          {serverName && (
+          {displayServerBadge && (
             <span className="rounded-sm border border-neon-purple/40 bg-neon-purple/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-neon-purple backdrop-blur-sm">
-              {serverName}
+              {displayServerBadge}
             </span>
           )}
         </div>

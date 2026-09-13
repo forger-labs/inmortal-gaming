@@ -2,35 +2,39 @@
 
 import { CartIcon, WhatsAppIcon } from "@shared/icons";
 import { cyberSuccess } from "@shared/toasts";
-import type { SubProductEntity } from "@shared/types";
+import type { ServerEntity, SubProductEntity } from "@shared/types";
 import { useState } from "react";
 
 interface SubproductActionsProps {
   subproduct: SubProductEntity;
-  serverName?: string;
+  selectedServer?: ServerEntity | null;
 }
 
 export function SubproductActions({
   subproduct,
-  serverName,
+  selectedServer,
 }: SubproductActionsProps) {
   const [isAdding, setIsAdding] = useState(false);
 
   const handleAddToCart = () => {
     setIsAdding(true);
 
-    // Simulate cyber addition & notify user
+    const serverDetail = selectedServer
+      ? ` (${selectedServer.server_name})`
+      : "";
     setTimeout(() => {
       setIsAdding(false);
       cyberSuccess(
-        `"${subproduct.name}" agregado al carrito correctamente.`,
+        `"${subproduct.name}"${serverDetail} agregado al carrito correctamente.`,
         "[CARRITO]",
       );
     }, 250);
   };
 
   const handleWhatsAppInquiry = () => {
-    const serverInfo = serverName ? ` en servidor ${serverName}` : "";
+    const serverInfo = selectedServer
+      ? ` en servidor "${selectedServer.server_name}"`
+      : "";
     const message = encodeURIComponent(
       `Hola Inmortal Gaming, estoy interesado en el subproducto "${subproduct.name}"${serverInfo} (Precio: $${subproduct.price} USD).`,
     );
@@ -51,6 +55,15 @@ export function SubproductActions({
           {subproduct.is_active ? "DISPONIBLE" : "NO DISPONIBLE"}
         </span>
       </div>
+
+      {selectedServer && (
+        <div className="flex items-center justify-between rounded border border-white/5 bg-white/5 px-3 py-1.5 font-mono text-xs text-text-secondary">
+          <span className="text-text-muted">Servidor seleccionado:</span>
+          <span className="font-semibold text-neon-primary">
+            {selectedServer.server_name}
+          </span>
+        </div>
+      )}
 
       {/* Add to Cart Button (NO QUANTITY DISPLAYED) */}
       <button
@@ -77,7 +90,7 @@ export function SubproductActions({
       <button
         type="button"
         onClick={handleWhatsAppInquiry}
-        className="flex w-full items-center justify-center gap-2 rounded-lg border border-neon-green/40 bg-transparent py-3.5 font-mono text-xs font-semibold uppercase tracking-wider text-neon-green transition-all duration-200 hover:bg-neon-green/10 hover:border-neon-green"
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-neon-green/40 bg-transparent py-3.5 font-mono text-xs font-semibold uppercase tracking-wider text-neon-green transition-all duration-200 hover:bg-neon-green/10 hover:border-neon-green cursor-pointer"
       >
         <WhatsAppIcon className="h-4 w-4" />
         <span>Consultar por WhatsApp</span>

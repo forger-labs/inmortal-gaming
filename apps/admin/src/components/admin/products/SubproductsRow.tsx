@@ -18,7 +18,7 @@ interface SubproductsRowProps {
   subproduct: SubProductEntity;
   productName: string;
   subcategoryName: string;
-  serverName: string;
+  serverNames: string[];
   onEdit: (subproduct: SubProductEntity) => void;
   onDelete: (subproduct: SubProductEntity) => void;
   onToggleStatus: (subproduct: SubProductEntity) => void;
@@ -30,7 +30,7 @@ export function SubproductsRow({
   subproduct,
   productName,
   subcategoryName,
-  serverName,
+  serverNames,
   onEdit,
   onDelete,
   onToggleStatus,
@@ -92,11 +92,29 @@ export function SubproductsRow({
         </span>
       </td>
 
-      {/* Servidor */}
+      {/* Servidores */}
       <td className="px-6 py-3.5">
-        <span className="inline-flex items-center rounded border border-neon-primary/20 bg-neon-primary/5 px-2.5 py-0.5 font-mono text-xs text-neon-primary/90">
-          {serverName || `Servidor #${subproduct.server_id}`}
-        </span>
+        <div className="flex flex-wrap items-center gap-1 max-w-[200px]">
+          {serverNames.length === 0 ? (
+            <span className="font-mono text-xs text-text-muted">
+              Sin servidor
+            </span>
+          ) : (
+            serverNames.slice(0, 2).map((srvName) => (
+              <span
+                key={srvName}
+                className="inline-flex items-center rounded border border-neon-primary/20 bg-neon-primary/5 px-2 py-0.5 font-mono text-[11px] text-neon-primary/90 truncate max-w-[120px]"
+              >
+                {srvName}
+              </span>
+            ))
+          )}
+          {serverNames.length > 2 && (
+            <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-text-muted">
+              +{serverNames.length - 2}
+            </span>
+          )}
+        </div>
       </td>
 
       {/* Precio */}

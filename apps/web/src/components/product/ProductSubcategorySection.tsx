@@ -4,12 +4,6 @@ import { motion } from "framer-motion";
 import { EASE_OUT_EXPO } from "@/constants";
 import { ProductSubproductCard } from "./ProductSubproductCard";
 
-interface FlattenedSubProduct {
-  subproduct: CatalogSubProduct;
-  serverName: string;
-  serverId: number;
-}
-
 interface ProductSubcategorySectionProps {
   subcategory: CatalogSubcategory;
   selectedServerId: number | "all";
@@ -33,23 +27,31 @@ export function ProductSubcategorySection({
   subcategory,
   selectedServerId,
 }: ProductSubcategorySectionProps) {
-  // Collect all subproducts for this subcategory across servers
-  const items: FlattenedSubProduct[] = [];
+  // Extract unique subproducts (avoiding duplicates)
+  let subproductsList: CatalogSubProduct[] = [];
 
-  subcategory.servers?.forEach((server) => {
-    if (selectedServerId !== "all" && server.id !== selectedServerId) {
-      return;
-    }
-    server.sub_products?.forEach((subproduct) => {
-      items.push({
-        subproduct,
-        serverName: server.server_name,
-        serverId: server.id,
+  if (Array.isArray(subcategory.subproducts)) {
+    subproductsList = subcategory.subproducts.filter((subproduct) => {
+      if (selectedServerId === "all") return true;
+      return subproduct.servers?.some((s) => s.id === selectedServerId);
+    });
+  } else if (Array.isArray(subcategory.servers)) {
+    // Legacy fallback with deduplication
+    const seenIds = new Set<number>();
+    subcategory.servers.forEach((server) => {
+      if (selectedServerId !== "all" && server.id !== selectedServerId) {
+        return;
+      }
+      server.sub_products?.forEach((subproduct) => {
+        if (!seenIds.has(subproduct.id)) {
+          seenIds.add(subproduct.id);
+          subproductsList.push(subproduct);
+        }
       });
     });
-  });
+  }
 
-  if (items.length === 0) {
+  if (subproductsList.length === 0) {
     return null;
   }
 
@@ -64,7 +66,8 @@ export function ProductSubcategorySection({
           </h3>
         </div>
         <span className="font-mono text-xs text-text-secondary">
-          {items.length} {items.length === 1 ? "SUBPRODUCTO" : "SUBPRODUCTOS"}
+          {subproductsList.length}{" "}
+          {subproductsList.length === 1 ? "SUBPRODUCTO" : "SUBPRODUCTOS"}
         </span>
       </div>
 
@@ -75,11 +78,11 @@ export function ProductSubcategorySection({
         animate="visible"
         className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
       >
-        {items.map(({ subproduct, serverName }) => (
+        {subproductsList.map((subproduct) => (
           <motion.div key={subproduct.id} variants={cardVariants}>
             <ProductSubproductCard
               subproduct={subproduct}
-              serverName={serverName}
+              selectedServerId={selectedServerId}
             />
           </motion.div>
         ))}

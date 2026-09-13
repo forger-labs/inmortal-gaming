@@ -1,6 +1,6 @@
 "use client";
 
-import { CloseIcon, UploadIcon } from "@shared/icons";
+import { CloseIcon, ServerIcon, UploadIcon } from "@shared/icons";
 import type {
   JsonShapeArrayConfig,
   JsonShapeMap,
@@ -164,14 +164,11 @@ export function SubproductFormModal({
             (val) => typeof val === "number" && val > 0,
           )
           .required("Selecciona una subcategoria"),
-        server_id: yup
-          .mixed()
-          .test(
-            "server-required",
-            "Selecciona un servidor",
-            (val) => typeof val === "number" && val > 0,
-          )
-          .required("Selecciona un servidor"),
+        server_ids: yup
+          .array()
+          .of(yup.number().required())
+          .min(1, "Selecciona al menos un servidor")
+          .required("Selecciona al menos un servidor"),
         price: yup
           .number()
           .typeError("El precio debe ser un numero")
@@ -219,7 +216,12 @@ export function SubproductFormModal({
       product_id: subproduct?.product_id ?? products[0]?.id ?? "",
       sub_category_id:
         subproduct?.sub_category_id ?? subcategories[0]?.id ?? "",
-      server_id: subproduct?.server_id ?? servers[0]?.id ?? "",
+      server_ids:
+        subproduct?.server_ids && subproduct.server_ids.length > 0
+          ? subproduct.server_ids
+          : servers[0]
+            ? [servers[0].id]
+            : [],
       price: subproduct?.price ?? "",
       is_active: subproduct?.is_active ?? true,
       image: subproduct?.image ?? null,
@@ -236,6 +238,36 @@ export function SubproductFormModal({
       }
     },
   });
+
+  // Servidores filtrados según el producto seleccionado
+  const relevantServers = useMemo(() => {
+    if (!formik.values.product_id) return servers;
+    const matching = servers.filter(
+      (s) => s.product_id === formik.values.product_id,
+    );
+    return matching.length > 0 ? matching : servers;
+  }, [servers, formik.values.product_id]);
+
+  const handleToggleServer = (serverId: number) => {
+    const current = formik.values.server_ids || [];
+    if (current.includes(serverId)) {
+      formik.setFieldValue(
+        "server_ids",
+        current.filter((id) => id !== serverId),
+      );
+    } else {
+      formik.setFieldValue("server_ids", [...current, serverId]);
+    }
+  };
+
+  const handleSelectAllServers = () => {
+    const allIds = relevantServers.map((s) => s.id);
+    formik.setFieldValue("server_ids", allIds);
+  };
+
+  const handleClearServers = () => {
+    formik.setFieldValue("server_ids", []);
+  };
 
   // Cambio reactivo de subcategoria con actualizacion de campos dinamicos
   const handleSubcategorySelect = (subcatId: number | "") => {
@@ -482,8 +514,8 @@ export function SubproductFormModal({
                   </div>
                 </div>
 
-                {/* ─── Fila 2: Relaciones (Producto, Subcategoria, Servidor) ─── */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {/* ─── Fila 2: Relaciones (Producto, Subcategoria) ─── */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field
                     id="subproduct-form-product"
                     label="Producto padre"
@@ -544,37 +576,78 @@ export function SubproductFormModal({
                       ))}
                     </select>
                   </Field>
+                </div>
 
-                  <Field
-                    id="subproduct-form-server"
-                    label="Servidor de entrega"
-                    error={
-                      formik.touched.server_id
-                        ? (formik.errors.server_id as string)
-                        : undefined
-                    }
-                  >
-                    <select
-                      id="subproduct-form-server"
-                      name="server_id"
-                      value={formik.values.server_id}
-                      onChange={(e) =>
-                        formik.setFieldValue(
-                          "server_id",
-                          e.target.value === "" ? "" : Number(e.target.value),
-                        )
-                      }
-                      onBlur={formik.handleBlur}
-                      className="w-full cursor-pointer rounded-md border border-white/10 bg-bg-primary px-3 py-2 font-body text-xs text-text-primary transition-all focus:border-neon-primary focus:outline-none focus:ring-1 focus:ring-neon-primary"
-                    >
-                      <option value="">Selecciona un servidor</option>
-                      {servers.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.server_name}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
+                {/* ─── Fila 2.5: Selección Múltiple de Servidores ─── */}
+                <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-bg-surface p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ServerIcon className="h-4 w-4 text-neon-primary" />
+                      <span className="font-mono text-xs font-semibold uppercase tracking-wider text-text-primary">
+                        Servidores de Entrega (
+                        {formik.values.server_ids?.length || 0} seleccionados)
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 font-mono text-[11px]">
+                      <button
+                        type="button"
+                        onClick={handleSelectAllServers}
+                        className="text-neon-primary transition-colors hover:underline cursor-pointer"
+                      >
+                        Seleccionar todos
+                      </button>
+                      <span className="text-text-muted">|</span>
+                      <button
+                        type="button"
+                        onClick={handleClearServers}
+                        className="text-text-muted transition-colors hover:text-neon-pink cursor-pointer"
+                      >
+                        Limpiar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-1 max-h-36 overflow-y-auto">
+                    {relevantServers.length === 0 ? (
+                      <span className="font-mono text-xs text-text-muted italic">
+                        No hay servidores registrados para este producto.
+                      </span>
+                    ) : (
+                      relevantServers.map((s) => {
+                        const isSelected = formik.values.server_ids?.includes(
+                          s.id,
+                        );
+                        return (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => handleToggleServer(s.id)}
+                            className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-mono text-xs font-medium transition-all cursor-pointer ${
+                              isSelected
+                                ? "border-neon-primary bg-neon-primary/15 text-neon-primary shadow-[0_0_12px_rgba(0,240,255,0.2)]"
+                                : "border-white/10 bg-bg-primary text-text-secondary hover:border-white/25 hover:text-text-primary"
+                            }`}
+                          >
+                            <span
+                              className={`h-1.5 w-1.5 rounded-full ${
+                                isSelected
+                                  ? "bg-neon-primary animate-pulse"
+                                  : "bg-text-muted"
+                              }`}
+                            />
+                            <span>{s.server_name}</span>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {formik.touched.server_ids && formik.errors.server_ids && (
+                    <span className="font-mono text-xs text-neon-pink mt-1">
+                      {formik.errors.server_ids as string}
+                    </span>
+                  )}
                 </div>
 
                 {/* ─── Fila 3: Imagen y Estado Activo ─── */}

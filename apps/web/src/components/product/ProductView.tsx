@@ -86,7 +86,7 @@ export function ProductView({ productId }: ProductViewProps) {
       .finally(() => setLoading(false));
   };
 
-  // Aggregate unique servers and total subproducts
+  // Aggregate unique servers and total subproducts (deduplicated)
   const { serverOptions, totalServersCount, totalSubproductsCount } =
     useMemo(() => {
       if (!product || !product.subcategories) {
@@ -97,24 +97,36 @@ export function ProductView({ productId }: ProductViewProps) {
         };
       }
 
-      const serverMap = new Map<number, { name: string; count: number }>();
       let totalSubs = 0;
+      const serverSubCountMap = new Map<number, number>();
+      const serverNameMap = new Map<number, string>();
+
+      // Register product-level servers if present
+      product.servers?.forEach((srv) => {
+        serverNameMap.set(srv.id, srv.server_name);
+        serverSubCountMap.set(srv.id, 0);
+      });
 
       product.subcategories.forEach((subcat) => {
-        subcat.servers?.forEach((server) => {
-          const subCount = server.sub_products?.length || 0;
-          totalSubs += subCount;
-
-          const existing = serverMap.get(server.id);
-          if (existing) {
-            existing.count += subCount;
-          } else {
-            serverMap.set(server.id, {
-              name: server.server_name,
-              count: subCount,
+        if (Array.isArray(subcat.subproducts)) {
+          totalSubs += subcat.subproducts.length;
+          subcat.subproducts.forEach((sub) => {
+            sub.servers?.forEach((srv) => {
+              serverNameMap.set(srv.id, srv.server_name);
+              const currentCount = serverSubCountMap.get(srv.id) || 0;
+              serverSubCountMap.set(srv.id, currentCount + 1);
             });
-          }
-        });
+          });
+        } else if (Array.isArray(subcat.servers)) {
+          // Legacy fallback
+          subcat.servers.forEach((server) => {
+            const subCount = server.sub_products?.length || 0;
+            totalSubs += subCount;
+            serverNameMap.set(server.id, server.server_name);
+            const currentCount = serverSubCountMap.get(server.id) || 0;
+            serverSubCountMap.set(server.id, currentCount + subCount);
+          });
+        }
       });
 
       const options: ServerOption[] = [
@@ -125,17 +137,17 @@ export function ProductView({ productId }: ProductViewProps) {
         },
       ];
 
-      serverMap.forEach((data, id) => {
+      serverNameMap.forEach((name, id) => {
         options.push({
           id,
-          name: data.name,
-          subproductsCount: data.count,
+          name,
+          subproductsCount: serverSubCountMap.get(id) || 0,
         });
       });
 
       return {
         serverOptions: options,
-        totalServersCount: serverMap.size,
+        totalServersCount: serverNameMap.size,
         totalSubproductsCount: totalSubs,
       };
     }, [product]);

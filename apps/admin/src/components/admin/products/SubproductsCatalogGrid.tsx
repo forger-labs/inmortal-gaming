@@ -66,19 +66,27 @@ export function SubproductsCatalogGrid({
 
   return (
     <div className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {subproducts.map((subproduct) => (
-        <SubproductCatalogCard
-          key={subproduct.id}
-          subproduct={subproduct}
-          productName={productMap.get(subproduct.product_id) ?? ""}
-          subcategoryName={subcategoryMap.get(subproduct.sub_category_id) ?? ""}
-          serverName={serverMap.get(subproduct.server_id) ?? ""}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onToggleStatus={onToggleStatus}
-          onPreview={onPreview}
-        />
-      ))}
+      {subproducts.map((subproduct) => {
+        const serverNames = (subproduct.server_ids || []).map(
+          (id) => serverMap.get(id) || `ID #${id}`,
+        );
+
+        return (
+          <SubproductCatalogCard
+            key={subproduct.id}
+            subproduct={subproduct}
+            productName={productMap.get(subproduct.product_id) ?? ""}
+            subcategoryName={
+              subcategoryMap.get(subproduct.sub_category_id) ?? ""
+            }
+            serverNames={serverNames}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onToggleStatus={onToggleStatus}
+            onPreview={onPreview}
+          />
+        );
+      })}
     </div>
   );
 }

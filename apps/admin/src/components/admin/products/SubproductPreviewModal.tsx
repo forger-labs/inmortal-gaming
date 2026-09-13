@@ -1,6 +1,6 @@
 "use client";
 
-import { CloseIcon, ProductsIcon } from "@shared/icons";
+import { CloseIcon, ProductsIcon, ServerIcon } from "@shared/icons";
 import { cyberSuccess } from "@shared/toasts";
 import type {
   CategoryEntity,
@@ -53,10 +53,10 @@ export function SubproductPreviewModal({
     return categories.find((c) => c.id === subcategory.category_id);
   }, [categories, subcategory]);
 
-  const server = useMemo(
-    () => servers.find((s) => s.id === subproduct?.server_id),
-    [servers, subproduct?.server_id],
-  );
+  const assignedServers = useMemo(() => {
+    if (!subproduct?.server_ids) return [];
+    return servers.filter((s) => subproduct.server_ids.includes(s.id));
+  }, [servers, subproduct?.server_ids]);
 
   const imageUrl = subproduct ? getR2ImageUrl(subproduct.image) : "";
 
@@ -200,36 +200,19 @@ export function SubproductPreviewModal({
 
                       <div>
                         <span className="block font-mono text-[10px] uppercase tracking-wider text-text-muted">
-                          Servidor
-                        </span>
-                        <span className="font-body text-sm font-medium text-text-secondary">
-                          {server?.server_name || `ID #${subproduct.server_id}`}
-                        </span>
-                      </div>
-
-                      <div>
-                        <span className="block font-mono text-[10px] uppercase tracking-wider text-text-muted">
                           Categoria General
                         </span>
                         <span className="font-body text-sm font-medium text-text-secondary">
                           {category?.category_name || "Sin categoria"}
                         </span>
                       </div>
-                    </div>
 
-                    <div className="flex items-center justify-between border-t border-white/5 pt-3">
                       <div>
                         <span className="block font-mono text-[10px] uppercase tracking-wider text-text-muted">
-                          Precio
+                          Estado
                         </span>
-                        <span className="font-mono text-lg font-bold text-neon-primary">
-                          ${subproduct.price.toLocaleString("es-MX")}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
                         <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-xs font-semibold ${
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-xs font-semibold ${
                             subproduct.is_active
                               ? "border border-neon-green/30 bg-neon-green/10 text-neon-green"
                               : "border border-white/10 bg-white/5 text-text-muted"
@@ -243,6 +226,43 @@ export function SubproductPreviewModal({
                             }`}
                           />
                           {subproduct.is_active ? "Activo" : "Inactivo"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Lista de Servidores */}
+                    <div className="border-t border-white/5 pt-2.5">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <ServerIcon className="h-3.5 w-3.5 text-neon-primary" />
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
+                          Servidores ({assignedServers.length}):
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {assignedServers.length === 0 ? (
+                          <span className="font-mono text-xs text-text-muted italic">
+                            Sin servidores asignados
+                          </span>
+                        ) : (
+                          assignedServers.map((srv) => (
+                            <span
+                              key={srv.id}
+                              className="inline-flex items-center rounded border border-neon-primary/25 bg-neon-primary/10 px-2 py-0.5 font-mono text-[11px] text-neon-primary"
+                            >
+                              {srv.server_name}
+                            </span>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                      <div>
+                        <span className="block font-mono text-[10px] uppercase tracking-wider text-text-muted">
+                          Precio
+                        </span>
+                        <span className="font-mono text-lg font-bold text-neon-primary">
+                          ${subproduct.price.toLocaleString("es-MX")} USD
                         </span>
                       </div>
                     </div>

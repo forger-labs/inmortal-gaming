@@ -68,7 +68,7 @@ export function SubproductsTable({
               Subcategoria
             </th>
             <th scope="col" className="px-6 py-3">
-              Servidor
+              Servidores
             </th>
             <th scope="col" className="px-6 py-3">
               Precio
@@ -91,22 +91,28 @@ export function SubproductsTable({
               description="No hay subproductos registrados o que coincidan con los filtros aplicados."
             />
           ) : (
-            subproducts.map((subproduct, index) => (
-              <SubproductsRow
-                key={subproduct.id}
-                index={index}
-                subproduct={subproduct}
-                productName={productMap.get(subproduct.product_id) ?? ""}
-                subcategoryName={
-                  subcategoryMap.get(subproduct.sub_category_id) ?? ""
-                }
-                serverName={serverMap.get(subproduct.server_id) ?? ""}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onToggleStatus={onToggleStatus}
-                onPreview={onPreview}
-              />
-            ))
+            subproducts.map((subproduct, index) => {
+              const serverNames = (subproduct.server_ids || []).map(
+                (id) => serverMap.get(id) || `ID #${id}`,
+              );
+
+              return (
+                <SubproductsRow
+                  key={subproduct.id}
+                  index={index}
+                  subproduct={subproduct}
+                  productName={productMap.get(subproduct.product_id) ?? ""}
+                  subcategoryName={
+                    subcategoryMap.get(subproduct.sub_category_id) ?? ""
+                  }
+                  serverNames={serverNames}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onToggleStatus={onToggleStatus}
+                  onPreview={onPreview}
+                />
+              );
+            })
           )}
         </tbody>
       </table>

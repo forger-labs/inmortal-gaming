@@ -17,7 +17,7 @@ interface SubproductCatalogCardProps {
   subproduct: SubProductEntity;
   productName: string;
   subcategoryName: string;
-  serverName: string;
+  serverNames: string[];
   onEdit: (subproduct: SubProductEntity) => void;
   onDelete: (subproduct: SubProductEntity) => void;
   onToggleStatus: (subproduct: SubProductEntity) => void;
@@ -28,7 +28,7 @@ export function SubproductCatalogCard({
   subproduct,
   productName,
   subcategoryName,
-  serverName,
+  serverNames,
   onEdit,
   onDelete,
   onToggleStatus,
@@ -96,9 +96,11 @@ export function SubproductCatalogCard({
           <span className="inline-flex items-center rounded border border-neon-purple/30 bg-neon-purple/10 px-2 py-0.5 font-mono text-[11px] text-neon-purple truncate max-w-[150px]">
             {subcategoryName}
           </span>
-          {serverName && (
-            <span className="inline-flex items-center rounded border border-neon-primary/20 bg-neon-primary/5 px-2 py-0.5 font-mono text-[11px] text-neon-primary/80 truncate max-w-[120px]">
-              {serverName}
+          {serverNames.length > 0 && (
+            <span className="inline-flex items-center rounded border border-neon-primary/20 bg-neon-primary/5 px-2 py-0.5 font-mono text-[11px] text-neon-primary/80 truncate max-w-[130px]">
+              {serverNames.length === 1
+                ? serverNames[0]
+                : `${serverNames[0]} (+${serverNames.length - 1})`}
             </span>
           )}
         </div>

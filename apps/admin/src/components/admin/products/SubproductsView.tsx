@@ -36,6 +36,7 @@ const DEFAULT_FILTERS: SubProductFilters = {
   search: "",
   product_id: "ALL",
   sub_category_id: "ALL",
+  server_id: "ALL",
   min_price: "",
   max_price: "",
   status: "ALL",
@@ -139,6 +140,12 @@ export function SubproductsView() {
     ) {
       return false;
     }
+    if (
+      filters.server_id !== "ALL" &&
+      !sub.server_ids?.includes(Number(filters.server_id))
+    ) {
+      return false;
+    }
     if (filters.status === "ACTIVE" && !sub.is_active) {
       return false;
     }
@@ -177,7 +184,7 @@ export function SubproductsView() {
         await adminApi.createSubproduct({
           name: values.name.trim(),
           sub_category_id: Number(values.sub_category_id),
-          server_id: Number(values.server_id),
+          server_ids: (values.server_ids || []).map(Number),
           product_id: Number(values.product_id),
           price: Number(values.price),
           product_data: values.product_data,
@@ -192,7 +199,7 @@ export function SubproductsView() {
         await adminApi.updateSubproduct(modal.subproduct.id, {
           name: values.name.trim(),
           sub_category_id: Number(values.sub_category_id),
-          server_id: Number(values.server_id),
+          server_ids: (values.server_ids || []).map(Number),
           product_id: Number(values.product_id),
           price: Number(values.price),
           product_data: values.product_data,
@@ -291,6 +298,7 @@ export function SubproductsView() {
           onChange={handleFiltersChange}
           products={products}
           subcategories={subcategories}
+          servers={servers}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           resultCount={filteredSubproducts.length}
@@ -361,7 +369,7 @@ export function SubproductsView() {
         onClose={() => setPreviewSubproduct(null)}
       />
 
-      {/* ─── Modal Eliminar Subproducto ─── */}
+      {/* ─── Modal Confirmacion de Eliminacion ─── */}
       <DeleteSubproductModal
         open={deleteModal.open}
         subproduct={deleteModal.subproduct}

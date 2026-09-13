@@ -1344,6 +1344,14 @@ export default class AdminApi {
   async getSubproducts(
     page = 1,
     limit = 10,
+    filter?: {
+      server_id?: number | string;
+      sub_category_id?: number | string;
+      name?: string;
+      is_active?: boolean;
+      min_price?: number | string;
+      max_price?: number | string;
+    },
   ): Promise<PaginatedResult<SubProductEntity>> {
     const result: ApiResponse<PaginatedResult<SubProductEntity>> = {
       data: null,
@@ -1351,8 +1359,38 @@ export default class AdminApi {
       error: null,
     };
     try {
+      let queryParams = `page=${page}&limit=${limit}`;
+      if (
+        filter?.server_id !== undefined &&
+        filter.server_id !== "ALL" &&
+        filter.server_id !== 0 &&
+        filter.server_id !== "0"
+      ) {
+        queryParams += `&server_id=${filter.server_id}`;
+      }
+      if (
+        filter?.sub_category_id !== undefined &&
+        filter.sub_category_id !== "ALL" &&
+        filter.sub_category_id !== 0 &&
+        filter.sub_category_id !== "0"
+      ) {
+        queryParams += `&sub_category_id=${filter.sub_category_id}`;
+      }
+      if (filter?.name?.trim()) {
+        queryParams += `&name=${encodeURIComponent(filter.name.trim())}`;
+      }
+      if (filter?.is_active !== undefined) {
+        queryParams += `&is_active=${filter.is_active}`;
+      }
+      if (filter?.min_price !== undefined && filter.min_price !== "") {
+        queryParams += `&min_price=${filter.min_price}`;
+      }
+      if (filter?.max_price !== undefined && filter.max_price !== "") {
+        queryParams += `&max_price=${filter.max_price}`;
+      }
+
       const response = await this.httpClient.get({
-        url: `/subproducts?page=${page}&limit=${limit}`,
+        url: `/subproducts?${queryParams}`,
       });
 
       const { success, data, error } = response.data as ApiResponse<
@@ -1457,7 +1495,11 @@ export default class AdminApi {
         body = new FormData();
         body.append("name", dto.name);
         body.append("sub_category_id", String(dto.sub_category_id));
-        body.append("server_id", String(dto.server_id));
+        if (Array.isArray(dto.server_ids)) {
+          for (const srvId of dto.server_ids) {
+            body.append("server_ids", String(srvId));
+          }
+        }
         body.append("product_id", String(dto.product_id));
         body.append("price", String(dto.price));
         const productDataStr =
@@ -1522,8 +1564,10 @@ export default class AdminApi {
         if (dto.sub_category_id !== undefined) {
           body.append("sub_category_id", String(dto.sub_category_id));
         }
-        if (dto.server_id !== undefined) {
-          body.append("server_id", String(dto.server_id));
+        if (Array.isArray(dto.server_ids)) {
+          for (const srvId of dto.server_ids) {
+            body.append("server_ids", String(srvId));
+          }
         }
         if (dto.product_id !== undefined) {
           body.append("product_id", String(dto.product_id));
