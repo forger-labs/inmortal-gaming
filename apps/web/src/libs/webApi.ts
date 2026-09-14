@@ -6,16 +6,19 @@ import type {
   AuthTokens,
   CategoryEntity,
   LandingItemEntity,
-  LoginDTO,
+  LoginUserDTO,
   PaginatedResult,
   ProductCatalogEntity,
   ProductEntity,
   RefreshTokenDTO,
+  RegisterUserDTO,
   ServerEntity,
   SubcategoryEntity,
   SubProductEntity,
+  UserEntity,
+  UserMeDTO,
 } from "@shared/types";
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 
 import { BASE_API_URL, LOCAL_STORAGE_KEYS } from "@/constants/environment";
 
@@ -384,15 +387,61 @@ export default class WebApi {
     }
   }
 
-  async login(credentials: LoginDTO): Promise<AuthTokens> {
+  /**
+   * Registra un nuevo usuario en la plataforma (`POST /users/register`).
+   */
+  async register(userData: RegisterUserDTO): Promise<UserEntity> {
+    const result: ApiResponse<UserEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.post<RegisterUserDTO>({
+        url: "/users/register",
+        body: userData,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<UserEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al registrar usuario";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Inicia sesión de usuario (`POST /auth/user/login`).
+   */
+  async login(credentials: LoginUserDTO): Promise<AuthTokens> {
     const result: ApiResponse<AuthTokens> = {
       data: null,
       success: false,
       error: null,
     };
     try {
-      const response = await this.httpClient.post<LoginDTO>({
-        url: "/auth/admin/login",
+      const response = await this.httpClient.post<LoginUserDTO>({
+        url: "/auth/user/login",
         body: credentials,
       });
 
@@ -409,6 +458,59 @@ export default class WebApi {
       return data;
     } catch (error) {
       handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene el perfil del usuario autenticado actual (`GET /auth/user/me`).
+   */
+  async getMe(): Promise<UserMeDTO> {
+    const result: ApiResponse<UserMeDTO> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: "/auth/user/me",
+      });
+
+      const { success, data, error } = response.data as ApiResponse<UserMeDTO>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener datos del usuario";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
       throw error;
     }
   }
@@ -439,6 +541,17 @@ export default class WebApi {
       return data || "Sesión cerrada exitosamente";
     } catch (error) {
       handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
       throw error;
     }
   }
