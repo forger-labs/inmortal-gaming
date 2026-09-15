@@ -45,21 +45,6 @@ export function LandingHero() {
             Bienes Digitales para Gamers
           </h1>
 
-          {/* Waveform signal */}
-          <div
-            style={riseIn(2)}
-            className="rise-in flex h-14 items-end gap-1.5"
-            aria-hidden="true"
-          >
-            {WAVEFORM_HEIGHTS.map((height) => (
-              <span
-                key={height}
-                className="waveform-bar"
-                style={{ height: `${height}px` }}
-              />
-            ))}
-          </div>
-
           {/* Subheadline */}
           <p
             style={riseIn(3)}

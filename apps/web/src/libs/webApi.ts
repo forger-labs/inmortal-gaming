@@ -7,6 +7,7 @@ import type {
   CategoryEntity,
   LandingItemEntity,
   LoginUserDTO,
+  OrderEntity,
   PaginatedResult,
   ProductCatalogEntity,
   ProductEntity,
@@ -15,6 +16,7 @@ import type {
   ServerEntity,
   SubcategoryEntity,
   SubProductEntity,
+  UpdateUserDTO,
   UserEntity,
   UserMeDTO,
 } from "@shared/types";
@@ -539,6 +541,99 @@ export default class WebApi {
       }
 
       return data || "Sesión cerrada exitosamente";
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza el perfil de un usuario (`PUT /users/:id`).
+   */
+  async updateUser(
+    id: number | string,
+    dto: UpdateUserDTO,
+  ): Promise<UserEntity> {
+    const result: ApiResponse<UserEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.put({
+        url: `/users/${id}`,
+        body: dto,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<UserEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al actualizar el usuario";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista paginada de ordenes del usuario autenticado (`GET /orders/my-orders`).
+   */
+  async getMyOrders(
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResult<OrderEntity>> {
+    const result: ApiResponse<PaginatedResult<OrderEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/orders/my-orders?page=${page}&limit=${limit}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<OrderEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener las ordenes del usuario";
+        throw new Error(errorMessage);
+      }
+
+      return data;
     } catch (error) {
       handleApiError(error, result);
       if (isAxiosError(error) && error.response?.data) {

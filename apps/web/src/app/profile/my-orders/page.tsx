@@ -1,3 +1,5 @@
+import MyOrdersView from "@/components/orders/MyOrdersView";
+
 export default function MyOrders() {
-  return <div></div>;
+  return <MyOrdersView />;
 }

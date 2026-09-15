@@ -17,6 +17,14 @@ export interface RegisterUserDTO {
   username: string;
 }
 
+export interface UpdateUserDTO {
+  name?: string;
+  last_name?: string;
+  email?: string;
+  password?: string;
+  username?: string;
+}
+
 export interface UserEntity {
   id: number;
   name: string;

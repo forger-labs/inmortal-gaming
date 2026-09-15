@@ -67,14 +67,18 @@ export function Navbar() {
             {/* Account: login trigger (logged out) or user + logout (logged in) */}
             {isAuthenticated ? (
               <div className="hidden items-center gap-2 sm:flex">
-                <span className="flex max-w-[180px] items-center gap-2 rounded border border-border-subtle bg-bg-surface px-3 py-1.5 text-xs text-text-secondary">
+                <Link
+                  href="/profile"
+                  className="flex max-w-[180px] items-center gap-2 rounded border border-border-subtle bg-bg-surface px-3 py-1.5 text-xs text-text-secondary transition-colors hover:border-neon-primary/50 hover:text-neon-primary"
+                  title="Ver perfil"
+                >
                   <UsersIcon className="h-4 w-4 shrink-0 text-neon-primary" />
                   <span className="truncate">{email}</span>
-                </span>
+                </Link>
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="rounded border border-neon-primary px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-neon-primary transition-colors hover:bg-neon-primary/10"
+                  className="cursor-pointer rounded border border-neon-primary px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-neon-primary transition-colors hover:bg-neon-primary/10"
                 >
                   Salir
                 </button>
@@ -118,6 +122,24 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {isAuthenticated && (
+              <>
+                <Link
+                  href="/profile"
+                  className="block py-2 text-sm text-text-secondary transition-colors hover:text-neon-primary"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Mi Perfil
+                </Link>
+                <Link
+                  href="/profile/my-orders"
+                  className="block py-2 text-sm text-text-secondary transition-colors hover:text-neon-primary"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Mis Ordenes
+                </Link>
+              </>
+            )}
             <button
               type="button"
               onClick={() => {

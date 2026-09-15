@@ -9,4 +9,6 @@ export const ROUTES = {
   cart: "/cart",
   product: (id: string | number) => `/productos/${id}`,
   subproduct: (id: string | number) => `/subproductos/${id}`,
+  profile: "/profile",
+  myOrders: "/profile/my-orders",
 };

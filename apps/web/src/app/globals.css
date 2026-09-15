@@ -66,7 +66,7 @@ body {
 .glitch {
   position: relative;
   color: var(--neon-primary);
-  text-shadow: 0 0 3px var(--neon-primary);
+  text-shadow: 0 0 2px var(--neon-primary);
   transition: text-shadow 0.3s ease;
 }
 
@@ -97,7 +97,7 @@ body {
 .glitch:hover {
   text-shadow:
     0 0 2px var(--neon-primary),
-    0 0 4px var(--neon-primary);
+    0 0 3px var(--neon-primary);
   transition-duration: 0.5s;
   /*animation: glitch-offset 3s linear alternate-reverse;*/
 }

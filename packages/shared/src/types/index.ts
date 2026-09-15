@@ -3,6 +3,7 @@ export * from "./auth";
 export * from "./category";
 export * from "./http";
 export * from "./landing";
+export * from "./order";
 export * from "./product";
 export * from "./server";
 export * from "./subcategory";
