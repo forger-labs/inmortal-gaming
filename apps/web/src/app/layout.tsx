@@ -6,6 +6,7 @@ import "./globals.css";
 import { Footer } from "@/components/footer/Footer";
 import { Navbar } from "@/components/navbar/Navbar";
 import { AuthProvider } from "@/context/AuthContext";
+import { CartProvider } from "@/context/CartContext";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
@@ -51,11 +52,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col antialiased bg-bg-primary text-text-primary font-body">
         <AuthProvider>
-          <Navbar />
+          <CartProvider>
+            <Navbar />
 
-          {children}
-          <Footer />
-          <CyberToaster />
+            {children}
+            <Footer />
+            <CyberToaster />
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

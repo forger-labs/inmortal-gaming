@@ -41,13 +41,13 @@ export interface ProductFilters {
 
 export interface CatalogServerDTO {
   id: number;
+  price: number;
   server_name: string;
 }
 
 export interface CatalogSubProduct {
   id: number;
   name: string;
-  price: number;
   product_data: Record<string, unknown>;
   is_active: boolean;
   image?: string;

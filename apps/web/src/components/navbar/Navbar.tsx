@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { LoginModal } from "@/components/auth/LoginModal";
 import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 import type { NavLink } from "@/types";
 
 const NAV_LINKS: NavLink[] = [
@@ -18,6 +19,7 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const { isAuthenticated, email, logout } = useAuth();
+  const { totalItems } = useCart();
 
   const handleLogout = async () => {
     await logout();
@@ -56,12 +58,14 @@ export function Navbar() {
             <Link
               href="/cart"
               className="relative p-2 text-text-secondary transition-colors hover:text-neon-primary"
-              aria-label="Carrito"
+              aria-label={`Carrito (${totalItems} items)`}
             >
               <CartIcon className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-neon-primary text-[10px] font-bold text-black">
-                3
-              </span>
+              {totalItems > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-neon-primary px-1 text-[10px] font-bold text-black shadow-[0_0_8px_rgba(0,240,255,0.6)]">
+                  {totalItems > 99 ? "99+" : totalItems}
+                </span>
+              )}
             </Link>
 
             {/* Account: login trigger (logged out) or user + logout (logged in) */}

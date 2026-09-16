@@ -3,7 +3,8 @@ export type PaymentMethod = "Pagomovil" | "Binance" | string;
 
 export interface OrderEntity {
   id: number;
-  user_id: number;
+  user_id?: number | null;
+  phone_number?: string;
   total_amount: number;
   status: OrderStatus;
   payment_method: PaymentMethod;
@@ -12,6 +13,30 @@ export interface OrderEntity {
 
 export interface CreateOrderDTO {
   payment_method: PaymentMethod;
+  phone_number?: string;
+}
+
+export interface GuestOrderItemDTO {
+  sub_product_id: number;
+  item_price_id: number;
+  quantity: number;
+  unit_price: number;
+}
+
+export interface CreateGuestOrderDTO {
+  payment_method: PaymentMethod;
+  phone_number: string;
+  items: GuestOrderItemDTO[];
+}
+
+export interface OrderItemEntity {
+  id: number;
+  order_id: number;
+  sub_product_id: number;
+  item_price_id: number;
+  quantity: number;
+  unit_price: number;
+  sub_total: number;
 }
 
 export interface UpdateOrderStatusDTO {
