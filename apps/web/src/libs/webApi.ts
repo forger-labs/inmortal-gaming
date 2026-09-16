@@ -2,12 +2,20 @@ import HttpClient, {
   handleApiError,
 } from "@inmortal/shared/src/libs/httpClient";
 import type {
+  AddCartItemDTO,
   ApiResponse,
   AuthTokens,
+  CartItemEntity,
+  CartResponseDTO,
   CategoryEntity,
+  CreateGuestOrderDTO,
+  CreateOrderDTO,
+  ItemPriceEntity,
+  ItemPriceFilters,
   LandingItemEntity,
   LoginUserDTO,
   OrderEntity,
+  OrderItemEntity,
   PaginatedResult,
   ProductCatalogEntity,
   ProductEntity,
@@ -16,6 +24,7 @@ import type {
   ServerEntity,
   SubcategoryEntity,
   SubProductEntity,
+  UpdateCartItemDTO,
   UpdateUserDTO,
   UserEntity,
   UserMeDTO,
@@ -647,6 +656,521 @@ export default class WebApi {
             : resData.error?.message || resData.message || error.message;
         throw new Error(msg);
       }
+      throw error;
+    }
+  }
+
+  /**
+   * Crea una orden de compra para un usuario autenticado (`POST /orders`).
+   * Vacia el carrito persistido en base de datos.
+   */
+  async createOrder(dto: CreateOrderDTO): Promise<OrderEntity> {
+    const result: ApiResponse<OrderEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.post<CreateOrderDTO>({
+        url: "/orders",
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<OrderEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al generar la orden";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Crea una orden de compra publica para un usuario invitado / no autenticado (`POST /orders/guest`).
+   */
+  async createGuestOrder(dto: CreateGuestOrderDTO): Promise<OrderEntity> {
+    const result: ApiResponse<OrderEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.post<CreateGuestOrderDTO>({
+        url: "/orders/guest",
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<OrderEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al generar la orden de invitado";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene los detalles de una orden por su identificador (`GET /orders/:id`).
+   */
+  async getOrderById(id: number | string): Promise<OrderEntity> {
+    const result: ApiResponse<OrderEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/orders/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<OrderEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener la orden";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista de items de una orden (`GET /orders/:id/items`).
+   */
+  async getOrderItems(orderId: number | string): Promise<OrderItemEntity[]> {
+    const result: ApiResponse<OrderItemEntity[]> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/orders/${orderId}/items`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        OrderItemEntity[]
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener los items de la orden";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene el carrito del usuario autenticado con totales e items (`GET /cart`).
+   */
+  async getCart(): Promise<CartResponseDTO> {
+    const result: ApiResponse<CartResponseDTO> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: "/cart",
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<CartResponseDTO>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el carrito";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Agrega un item al carrito del usuario (`POST /cart/items`).
+   */
+  async addToCart(dto: AddCartItemDTO): Promise<CartItemEntity> {
+    const result: ApiResponse<CartItemEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.post<AddCartItemDTO>({
+        url: "/cart/items",
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<CartItemEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al agregar el item al carrito";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza la cantidad de un item en el carrito (`PUT /cart/items/:id`).
+   */
+  async updateCartItemQuantity(
+    id: number | string,
+    dto: UpdateCartItemDTO,
+  ): Promise<CartItemEntity> {
+    const result: ApiResponse<CartItemEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.put({
+        url: `/cart/items/${id}`,
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<CartItemEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al actualizar la cantidad del item";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina un item del carrito (`DELETE /cart/items/:id`).
+   */
+  async deleteCartItem(id: number | string): Promise<string> {
+    const result: ApiResponse<string> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.delete({
+        url: `/cart/items/${id}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<string>;
+      if (!success) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al eliminar el item del carrito";
+        throw new Error(errorMessage);
+      }
+
+      return data || "Item eliminado exitosamente";
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Vacia completamente el carrito del usuario (`DELETE /cart`).
+   */
+  async clearCart(): Promise<string> {
+    const result: ApiResponse<string> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.delete({
+        url: "/cart",
+      });
+
+      const { success, data, error } = response.data as ApiResponse<string>;
+      if (!success) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al vaciar el carrito";
+        throw new Error(errorMessage);
+      }
+
+      return data || "Carrito vaciado exitosamente";
+    } catch (error) {
+      handleApiError(error, result);
+      if (isAxiosError(error) && error.response?.data) {
+        const resData = error.response.data as {
+          error?: string | { message?: string };
+          message?: string;
+        };
+        const msg =
+          typeof resData.error === "string"
+            ? resData.error
+            : resData.error?.message || resData.message || error.message;
+        throw new Error(msg);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista paginada de precios de items por servidor (`GET /item-prices`).
+   */
+  async getItemPrices(
+    page = 1,
+    limit = 50,
+    filter?: ItemPriceFilters,
+  ): Promise<PaginatedResult<ItemPriceEntity>> {
+    const result: ApiResponse<PaginatedResult<ItemPriceEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      let queryParams = `page=${page}&limit=${limit}`;
+      if (filter?.sub_product_id !== undefined) {
+        queryParams += `&sub_product_id=${filter.sub_product_id}`;
+      }
+      if (filter?.server_id !== undefined) {
+        queryParams += `&server_id=${filter.server_id}`;
+      }
+      if (filter?.is_active !== undefined) {
+        queryParams += `&is_active=${filter.is_active}`;
+      }
+      if (filter?.min_price !== undefined && filter.min_price !== "") {
+        queryParams += `&min_price=${filter.min_price}`;
+      }
+      if (filter?.max_price !== undefined && filter.max_price !== "") {
+        queryParams += `&max_price=${filter.max_price}`;
+      }
+
+      const response = await this.httpClient.get({
+        url: `/item-prices?${queryParams}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<ItemPriceEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener los precios de items";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un precio de item por su identificador (`GET /item-prices/:id`).
+   */
+  async getItemPriceById(id: number | string): Promise<ItemPriceEntity> {
+    const result: ApiResponse<ItemPriceEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/item-prices/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ItemPriceEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el precio del item";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene el precio de un subproducto en un servidor puntual (`GET /item-prices/subproduct/:sub_product_id/server/:server_id`).
+   */
+  async getItemPriceBySubProductAndServer(
+    subProductId: number | string,
+    serverId: number | string,
+  ): Promise<ItemPriceEntity> {
+    const result: ApiResponse<ItemPriceEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/item-prices/subproduct/${subProductId}/server/${serverId}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ItemPriceEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el precio del subproducto en el servidor";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
       throw error;
     }
   }
