@@ -88,14 +88,41 @@ export function SubproductsView() {
     }
   }, []);
 
-  // Cargar subproductos paginados
+  // Cargar subproductos paginados y sus precios por servidor
   const loadSubproducts = useCallback(async (targetPage: number) => {
     setLoading(true);
     try {
-      const response = await adminApi.getSubproducts(targetPage, PAGE_SIZE);
+      const [response, pricesRes] = await Promise.all([
+        adminApi.getSubproducts(targetPage, PAGE_SIZE),
+        adminApi.getItemPrices(1, 1000).catch(() => null),
+      ]);
       const items = response.items || [];
 
-      setSubproducts(items);
+      // Mapear precios por sub_product_id
+      const pricesMap = new Map<number, (typeof items)[0]["prices"]>();
+      if (pricesRes?.items) {
+        for (const ip of pricesRes.items) {
+          const list = (pricesMap.get(ip.sub_product_id) ||
+            []) as typeof pricesRes.items;
+          list.push(ip);
+          pricesMap.set(ip.sub_product_id, list);
+        }
+      }
+
+      const enriched = items.map((sub) => {
+        const subPrices = pricesMap.get(sub.id) || sub.prices || [];
+        const serverIds = subPrices.map((p) => p.server_id);
+        const firstPrice =
+          subPrices.length > 0 ? subPrices[0].price : sub.price;
+        return {
+          ...sub,
+          prices: subPrices,
+          server_ids: serverIds.length > 0 ? serverIds : sub.server_ids || [],
+          price: firstPrice,
+        };
+      });
+
+      setSubproducts(enriched);
       setTotal(response.total ?? items.length);
       setTotalPages(
         response.total_pages ??
@@ -140,11 +167,12 @@ export function SubproductsView() {
     ) {
       return false;
     }
-    if (
-      filters.server_id !== "ALL" &&
-      !sub.server_ids?.includes(Number(filters.server_id))
-    ) {
-      return false;
+    if (filters.server_id !== "ALL") {
+      const targetSrvId = Number(filters.server_id);
+      const hasServer =
+        sub.server_ids?.includes(targetSrvId) ||
+        sub.prices?.some((p) => p.server_id === targetSrvId);
+      if (!hasServer) return false;
     }
     if (filters.status === "ACTIVE" && !sub.is_active) {
       return false;
@@ -152,12 +180,26 @@ export function SubproductsView() {
     if (filters.status === "INACTIVE" && sub.is_active) {
       return false;
     }
-    if (minPriceNum !== null && sub.price < minPriceNum) {
+
+    // Filtrado por rango de precio evaluando los precios de los servidores
+    const pricesList =
+      sub.prices && sub.prices.length > 0
+        ? sub.prices.map((p) => p.price)
+        : typeof sub.price === "number"
+          ? [sub.price]
+          : [];
+
+    if (pricesList.length > 0) {
+      if (minPriceNum !== null && !pricesList.some((p) => p >= minPriceNum)) {
+        return false;
+      }
+      if (maxPriceNum !== null && !pricesList.some((p) => p <= maxPriceNum)) {
+        return false;
+      }
+    } else if (minPriceNum !== null || maxPriceNum !== null) {
       return false;
     }
-    if (maxPriceNum !== null && sub.price > maxPriceNum) {
-      return false;
-    }
+
     return true;
   });
 
@@ -171,11 +213,17 @@ export function SubproductsView() {
     setPage(safePage);
   };
 
-  // Crear o Editar Subproducto
+  // Crear o Editar Subproducto con tarifas por servidor
   const handleSubmit = async (values: SubProductFormValues) => {
     if (!modal.open) return;
 
     try {
+      const serverPricesPayload = (values.server_prices || []).map((sp) => ({
+        server_id: Number(sp.server_id),
+        price: Number(sp.price),
+        is_active: sp.is_active,
+      }));
+
       if (modal.mode === "create") {
         if (!values.image) {
           throw new Error("Debes seleccionar una imagen para el subproducto");
@@ -184,9 +232,8 @@ export function SubproductsView() {
         await adminApi.createSubproduct({
           name: values.name.trim(),
           sub_category_id: Number(values.sub_category_id),
-          server_ids: (values.server_ids || []).map(Number),
           product_id: Number(values.product_id),
-          price: Number(values.price),
+          prices: serverPricesPayload,
           product_data: values.product_data,
           is_active: values.is_active,
           image: values.image,
@@ -199,9 +246,8 @@ export function SubproductsView() {
         await adminApi.updateSubproduct(modal.subproduct.id, {
           name: values.name.trim(),
           sub_category_id: Number(values.sub_category_id),
-          server_ids: (values.server_ids || []).map(Number),
           product_id: Number(values.product_id),
-          price: Number(values.price),
+          prices: serverPricesPayload,
           product_data: values.product_data,
           is_active: values.is_active,
           image: values.image || undefined,
@@ -316,7 +362,7 @@ export function SubproductsView() {
             }
             onDelete={(sub) => setDeleteModal({ open: true, subproduct: sub })}
             onToggleStatus={handleToggleStatus}
-            onPreview={setPreviewSubproduct}
+            onPreview={(sub) => setPreviewSubproduct(sub)}
           />
         ) : (
           <SubproductsCatalogGrid
@@ -330,7 +376,7 @@ export function SubproductsView() {
             }
             onDelete={(sub) => setDeleteModal({ open: true, subproduct: sub })}
             onToggleStatus={handleToggleStatus}
-            onPreview={setPreviewSubproduct}
+            onPreview={(sub) => setPreviewSubproduct(sub)}
           />
         )}
 
@@ -346,7 +392,7 @@ export function SubproductsView() {
         )}
       </section>
 
-      {/* ─── Modal Formulario Crear / Editar ─── */}
+      {/* ─── Modal Crear / Editar Subproducto ─── */}
       <SubproductFormModal
         open={modal.open}
         mode={modal.mode}
@@ -361,7 +407,7 @@ export function SubproductsView() {
       {/* ─── Modal Vista Previa Completa ─── */}
       <SubproductPreviewModal
         open={Boolean(previewSubproduct)}
-        subproduct={previewSubproduct || undefined}
+        subproduct={previewSubproduct ?? undefined}
         products={products}
         subcategories={subcategories}
         servers={servers}

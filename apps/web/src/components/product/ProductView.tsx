@@ -112,13 +112,12 @@ export function ProductView({ productId }: ProductViewProps) {
           totalSubs += subcat.subproducts.length;
           subcat.subproducts.forEach((sub) => {
             sub.servers?.forEach((srv) => {
-              serverNameMap.set(srv.id, srv.server_name);
               const currentCount = serverSubCountMap.get(srv.id) || 0;
               serverSubCountMap.set(srv.id, currentCount + 1);
+              console.log(serverSubCountMap);
             });
           });
         } else if (Array.isArray(subcat.servers)) {
-          // Legacy fallback
           subcat.servers.forEach((server) => {
             const subCount = server.sub_products?.length || 0;
             totalSubs += subCount;

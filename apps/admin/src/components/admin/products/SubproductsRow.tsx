@@ -117,11 +117,44 @@ export function SubproductsRow({
         </div>
       </td>
 
-      {/* Precio */}
+      {/* Precio Dinámico por Servidor */}
       <td className="px-6 py-3.5">
-        <span className="font-mono text-sm font-bold text-neon-primary">
-          ${subproduct.price.toLocaleString("es-MX")}
-        </span>
+        {(() => {
+          const pricesList = (subproduct.prices || []).map((p) => p.price);
+          if (pricesList.length === 0) {
+            if (typeof subproduct.price === "number") {
+              return (
+                <span className="font-mono text-sm font-bold text-neon-primary">
+                  ${subproduct.price.toLocaleString("es-MX")} USD
+                </span>
+              );
+            }
+            return (
+              <span className="font-mono text-xs text-text-muted italic">
+                Sin precio
+              </span>
+            );
+          }
+          const min = Math.min(...pricesList);
+          const max = Math.max(...pricesList);
+          if (min === max) {
+            return (
+              <span className="font-mono text-sm font-bold text-neon-primary">
+                ${min.toLocaleString("es-MX")} USD
+              </span>
+            );
+          }
+          return (
+            <div className="flex flex-col">
+              <span className="font-mono text-xs font-bold text-neon-primary">
+                ${min.toLocaleString("es-MX")} ~ ${max.toLocaleString("es-MX")}
+              </span>
+              <span className="font-mono text-[10px] text-text-muted">
+                ({pricesList.length} servidores)
+              </span>
+            </div>
+          );
+        })()}
       </td>
 
       {/* Estado (Boton Toggle) */}

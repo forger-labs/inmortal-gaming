@@ -6,12 +6,14 @@ import type { ServerEntity } from "@shared/types";
 interface SubproductServersProps {
   assignedServers: ServerEntity[];
   selectedServerId?: number | null;
+  serverPrices?: Map<number, number>;
   onSelectServer?: (serverId: number) => void;
 }
 
 export function SubproductServers({
   assignedServers = [],
   selectedServerId,
+  serverPrices,
   onSelectServer,
 }: SubproductServersProps) {
   if (assignedServers.length === 0) {
@@ -47,13 +49,17 @@ export function SubproductServers({
 
       <div className="space-y-3">
         <p className="font-body text-xs text-text-muted">
-          Este subproducto está habilitado para entrega en los siguientes
-          servidores. Selecciona tu servidor de preferencia:
+          Este subproducto cuenta con tarifas diferenciadas por servidor.
+          Selecciona tu servidor para ver el precio aplicable:
         </p>
 
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           {assignedServers.map((server) => {
             const isSelected = selectedServerId === server.id;
+            const price = serverPrices?.get(server.id);
+            const formattedPrice =
+              price !== undefined ? `$${price.toFixed(2)} USD` : null;
+
             return (
               <button
                 key={server.id}
@@ -79,9 +85,11 @@ export function SubproductServers({
                     <span className="block font-display text-sm font-semibold text-text-primary truncate">
                       {server.server_name}
                     </span>
-                    <span className="block font-mono text-[10px] text-text-muted">
-                      ID #{server.id}
-                    </span>
+                    {formattedPrice && (
+                      <span className="block font-mono text-xs font-bold text-neon-primary">
+                        {formattedPrice}
+                      </span>
+                    )}
                   </div>
                 </div>
 

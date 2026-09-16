@@ -13,6 +13,8 @@ import type {
   CreateServerDTO,
   CreateSubcategoryDTO,
   CreateSubProductDTO,
+  ItemPriceEntity,
+  ItemPriceFilters,
   LandingItemEntity,
   LoginDTO,
   PaginatedResult,
@@ -24,6 +26,7 @@ import type {
   SubProductEntity,
   UpdateAdminDTO,
   UpdateCategoryDTO,
+  UpdateItemPriceDTO,
   UpdateLandingItemDTO,
   UpdateProductDTO,
   UpdateServerDTO,
@@ -896,8 +899,6 @@ export default class AdminApi {
         }
         if (dto.image instanceof File || dto.image instanceof Blob) {
           body.append("image", dto.image);
-        } else if (typeof dto.image === "string" && dto.image) {
-          body.append("image", dto.image);
         }
       }
 
@@ -1495,13 +1496,7 @@ export default class AdminApi {
         body = new FormData();
         body.append("name", dto.name);
         body.append("sub_category_id", String(dto.sub_category_id));
-        if (Array.isArray(dto.server_ids)) {
-          for (const srvId of dto.server_ids) {
-            body.append("server_ids", String(srvId));
-          }
-        }
         body.append("product_id", String(dto.product_id));
-        body.append("price", String(dto.price));
         const productDataStr =
           typeof dto.product_data === "string"
             ? dto.product_data
@@ -1514,6 +1509,14 @@ export default class AdminApi {
           body.append("image", dto.image);
         } else if (typeof dto.image === "string" && dto.image) {
           body.append("image", dto.image);
+        }
+        // Precios por servidor (JSON array string)
+        if (dto.prices !== undefined) {
+          const pricesStr =
+            typeof dto.prices === "string"
+              ? dto.prices
+              : JSON.stringify(dto.prices || []);
+          body.append("prices", pricesStr);
         }
       }
 
@@ -1564,16 +1567,8 @@ export default class AdminApi {
         if (dto.sub_category_id !== undefined) {
           body.append("sub_category_id", String(dto.sub_category_id));
         }
-        if (Array.isArray(dto.server_ids)) {
-          for (const srvId of dto.server_ids) {
-            body.append("server_ids", String(srvId));
-          }
-        }
         if (dto.product_id !== undefined) {
           body.append("product_id", String(dto.product_id));
-        }
-        if (dto.price !== undefined) {
-          body.append("price", String(dto.price));
         }
         if (dto.product_data !== undefined) {
           const productDataStr =
@@ -1587,6 +1582,13 @@ export default class AdminApi {
         }
         if (dto.image instanceof File || dto.image instanceof Blob) {
           body.append("image", dto.image);
+        }
+        if (dto.prices !== undefined) {
+          const pricesStr =
+            typeof dto.prices === "string"
+              ? dto.prices
+              : JSON.stringify(dto.prices || []);
+          body.append("prices", pricesStr);
         }
       }
 
@@ -1640,6 +1642,163 @@ export default class AdminApi {
       }
 
       return data ?? { message: "Subproducto eliminado exitosamente" };
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista paginada de precios de items por servidor (`GET /item-prices`).
+   */
+  async getItemPrices(
+    page = 1,
+    limit = 50,
+    filter?: ItemPriceFilters,
+  ): Promise<PaginatedResult<ItemPriceEntity>> {
+    const result: ApiResponse<PaginatedResult<ItemPriceEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      let queryParams = `page=${page}&limit=${limit}`;
+      if (filter?.sub_product_id !== undefined) {
+        queryParams += `&sub_product_id=${filter.sub_product_id}`;
+      }
+      if (filter?.server_id !== undefined) {
+        queryParams += `&server_id=${filter.server_id}`;
+      }
+      if (filter?.is_active !== undefined) {
+        queryParams += `&is_active=${filter.is_active}`;
+      }
+      if (filter?.min_price !== undefined && filter.min_price !== "") {
+        queryParams += `&min_price=${filter.min_price}`;
+      }
+      if (filter?.max_price !== undefined && filter.max_price !== "") {
+        queryParams += `&max_price=${filter.max_price}`;
+      }
+
+      const response = await this.httpClient.get({
+        url: `/item-prices?${queryParams}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<ItemPriceEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener los precios de items";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene un precio de item por su identificador (`GET /item-prices/:id`).
+   */
+  async getItemPriceById(id: number | string): Promise<ItemPriceEntity> {
+    const result: ApiResponse<ItemPriceEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/item-prices/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ItemPriceEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el precio del item";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene el precio de un subproducto en un servidor específico (`GET /item-prices/subproduct/:sub_product_id/server/:server_id`).
+   */
+  async getItemPriceBySubProductAndServer(
+    subProductId: number | string,
+    serverId: number | string,
+  ): Promise<ItemPriceEntity> {
+    const result: ApiResponse<ItemPriceEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/item-prices/subproduct/${subProductId}/server/${serverId}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ItemPriceEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener el precio del subproducto en el servidor";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza un precio de item existente (`PATCH /item-prices/:id`).
+   */
+  async updateItemPrice(
+    id: number | string,
+    dto: UpdateItemPriceDTO,
+  ): Promise<ItemPriceEntity> {
+    const result: ApiResponse<ItemPriceEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.patch({
+        url: `/item-prices/${id}`,
+        body: dto,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<ItemPriceEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al actualizar el precio del item";
+        throw new Error(errorMessage);
+      }
+
+      return data;
     } catch (error) {
       handleApiError(error, result);
       throw error;

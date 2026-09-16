@@ -2,8 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 
-const WAVEFORM_HEIGHTS = [20, 34, 48, 26, 56, 38, 30, 44];
-
 function riseIn(delay: number): CSSProperties {
   return { "--i": delay } as CSSProperties;
 }

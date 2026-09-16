@@ -1,15 +1,18 @@
 "use client";
 
-import { CloseIcon, ServerIcon, UploadIcon } from "@shared/icons";
+import { BoltIcon, CloseIcon, ServerIcon, UploadIcon } from "@shared/icons";
 import type {
+  ItemPriceEntity,
   JsonShapeArrayConfig,
   JsonShapeMap,
   ProductEntity,
   ServerEntity,
+  ServerPriceItem,
   SubcategoryEntity,
   SubProductDataMap,
   SubProductEntity,
   SubProductFormValues,
+  SubProductServerPriceFormValue,
 } from "@shared/types";
 import { getR2ImageUrl } from "@shared/utils";
 import { useFormik } from "formik";
@@ -23,6 +26,7 @@ import { FormInput } from "@/components/admin/commonForm/FormInput";
 import { FormSubmitButton } from "@/components/admin/commonForm/FormSubmitButton";
 import { Field } from "@/components/forms/Field";
 import { EASE_OUT_EXPO } from "@/constants";
+import { adminApi } from "@/libs/adminApi";
 import { SubproductDynamicFields } from "./SubproductDynamicFields";
 
 interface SubproductFormModalProps {
@@ -111,6 +115,8 @@ export function SubproductFormModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [bulkPrice, setBulkPrice] = useState<string>("");
+  const [loadingPrices, setLoadingPrices] = useState(false);
 
   // Subcategoria seleccionada actualmente
   const [selectedSubcatId, setSelectedSubcatId] = useState<number | "">(
@@ -139,7 +145,7 @@ export function SubproductFormModal({
     );
   }, [activeSubcategory, subproduct]);
 
-  // Esquema de validacion Yup: los campos dinamicos no son obligatorios
+  // Esquema de validacion Yup: validacion de precios por servidor
   const schema = useMemo(
     () =>
       yup.object({
@@ -164,16 +170,29 @@ export function SubproductFormModal({
             (val) => typeof val === "number" && val > 0,
           )
           .required("Selecciona una subcategoria"),
-        server_ids: yup
+        server_prices: yup
           .array()
-          .of(yup.number().required())
-          .min(1, "Selecciona al menos un servidor")
+          .of(
+            yup.object({
+              server_id: yup.number().required(),
+              price: yup
+                .mixed()
+                .test(
+                  "price-valid",
+                  "El precio debe ser un numero mayor o igual a 0",
+                  (val) =>
+                    val !== "" &&
+                    val !== undefined &&
+                    val !== null &&
+                    !Number.isNaN(Number(val)) &&
+                    Number(val) >= 0,
+                )
+                .required("Ingresa el precio"),
+              is_active: yup.boolean().required(),
+            }),
+          )
+          .min(1, "Selecciona al menos un servidor con su precio")
           .required("Selecciona al menos un servidor"),
-        price: yup
-          .number()
-          .typeError("El precio debe ser un numero")
-          .min(0, "El precio no puede ser negativo")
-          .required("Ingresa el precio"),
         is_active: yup.boolean().required(),
         image: yup
           .mixed()
@@ -210,19 +229,16 @@ export function SubproductFormModal({
     [isEdit],
   );
 
+  // Servidores filtrados según el producto seleccionado
+  const initialProductId = subproduct?.product_id ?? products[0]?.id ?? "";
+
   const formik = useFormik<SubProductFormValues>({
     initialValues: {
       name: subproduct?.name ?? "",
-      product_id: subproduct?.product_id ?? products[0]?.id ?? "",
+      product_id: initialProductId,
       sub_category_id:
         subproduct?.sub_category_id ?? subcategories[0]?.id ?? "",
-      server_ids:
-        subproduct?.server_ids && subproduct.server_ids.length > 0
-          ? subproduct.server_ids
-          : servers[0]
-            ? [servers[0].id]
-            : [],
-      price: subproduct?.price ?? "",
+      server_prices: [],
       is_active: subproduct?.is_active ?? true,
       image: subproduct?.image ?? null,
       product_data: initialProductData,
@@ -239,7 +255,7 @@ export function SubproductFormModal({
     },
   });
 
-  // Servidores filtrados según el producto seleccionado
+  // Servidores disponibles para el producto padre seleccionado
   const relevantServers = useMemo(() => {
     if (!formik.values.product_id) return servers;
     const matching = servers.filter(
@@ -248,25 +264,189 @@ export function SubproductFormModal({
     return matching.length > 0 ? matching : servers;
   }, [servers, formik.values.product_id]);
 
+  const { setFieldValue } = formik;
+  const currentServerPricesLength = formik.values.server_prices.length;
+
+  // Cargar precios existentes en modo edicion o inicializar en modo creacion
+  useEffect(() => {
+    if (!open) return;
+
+    let isMounted = true;
+
+    async function loadPrices() {
+      if (isEdit && subproduct?.id) {
+        setLoadingPrices(true);
+        try {
+          const pricesRes = await adminApi.getItemPrices(1, 100, {
+            sub_product_id: subproduct.id,
+          });
+          if (!isMounted) return;
+          const items = pricesRes.items || [];
+          if (items.length > 0) {
+            const mapped: SubProductServerPriceFormValue[] = items.map(
+              (ip) => ({
+                server_id: ip.server_id,
+                price: ip.price,
+                is_active: ip.is_active,
+              }),
+            );
+            setFieldValue("server_prices", mapped);
+            return;
+          }
+        } catch {
+          // Silencioso fallback
+        } finally {
+          if (isMounted) setLoadingPrices(false);
+        }
+
+        // Fallback si subproduct ya tenia prices en memoria
+        if (subproduct.prices && subproduct.prices.length > 0) {
+          const mapped: SubProductServerPriceFormValue[] =
+            subproduct.prices.map((p: ItemPriceEntity | ServerPriceItem) => ({
+              server_id: p.server_id,
+              price: p.price ?? 0,
+              is_active: p.is_active ?? true,
+            }));
+          setFieldValue("server_prices", mapped);
+          return;
+        }
+
+        // Fallback si subproduct tenia server_ids o un precio singular
+        if (subproduct.server_ids && subproduct.server_ids.length > 0) {
+          const defaultPrice = subproduct.price ?? 0;
+          const mapped: SubProductServerPriceFormValue[] =
+            subproduct.server_ids.map((srvId) => ({
+              server_id: srvId,
+              price: defaultPrice,
+              is_active: true,
+            }));
+          setFieldValue("server_prices", mapped);
+          return;
+        }
+      } else if (!isEdit) {
+        // Modo creacion: asignar el primer servidor por defecto si existe
+        if (relevantServers.length > 0 && currentServerPricesLength === 0) {
+          setFieldValue("server_prices", [
+            {
+              server_id: relevantServers[0].id,
+              price: "",
+              is_active: true,
+            },
+          ]);
+        }
+      }
+    }
+
+    loadPrices();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    open,
+    isEdit,
+    subproduct,
+    relevantServers,
+    setFieldValue,
+    currentServerPricesLength,
+  ]);
+
+  // Manejo de seleccion/deseleccion de servidor
   const handleToggleServer = (serverId: number) => {
-    const current = formik.values.server_ids || [];
-    if (current.includes(serverId)) {
-      formik.setFieldValue(
-        "server_ids",
-        current.filter((id) => id !== serverId),
-      );
+    const currentPrices = [...(formik.values.server_prices || [])];
+    const index = currentPrices.findIndex((p) => p.server_id === serverId);
+
+    if (index >= 0) {
+      // Remover servidor
+      const filtered = currentPrices.filter((p) => p.server_id !== serverId);
+      formik.setFieldValue("server_prices", filtered);
     } else {
-      formik.setFieldValue("server_ids", [...current, serverId]);
+      // Agregar servidor con precio por defecto o vacio
+      const initialPrice = bulkPrice !== "" ? Number(bulkPrice) : "";
+      formik.setFieldValue("server_prices", [
+        ...currentPrices,
+        {
+          server_id: serverId,
+          price: initialPrice,
+          is_active: true,
+        },
+      ]);
     }
   };
 
-  const handleSelectAllServers = () => {
-    const allIds = relevantServers.map((s) => s.id);
-    formik.setFieldValue("server_ids", allIds);
+  // Manejo de cambio de precio especifico de un servidor
+  const handleServerPriceChange = (serverId: number, value: string) => {
+    const currentPrices = [...(formik.values.server_prices || [])];
+    const index = currentPrices.findIndex((p) => p.server_id === serverId);
+
+    if (index >= 0) {
+      currentPrices[index] = {
+        ...currentPrices[index],
+        price: value === "" ? "" : Number(value),
+      };
+      formik.setFieldValue("server_prices", currentPrices);
+    } else {
+      formik.setFieldValue("server_prices", [
+        ...currentPrices,
+        {
+          server_id: serverId,
+          price: value === "" ? "" : Number(value),
+          is_active: true,
+        },
+      ]);
+    }
   };
 
+  // Manejo de toggle de estado activo del precio de un servidor
+  const handleServerActiveToggle = (serverId: number) => {
+    const currentPrices = [...(formik.values.server_prices || [])];
+    const index = currentPrices.findIndex((p) => p.server_id === serverId);
+
+    if (index >= 0) {
+      currentPrices[index] = {
+        ...currentPrices[index],
+        is_active: !currentPrices[index].is_active,
+      };
+      formik.setFieldValue("server_prices", currentPrices);
+    }
+  };
+
+  // Seleccionar todos los servidores relevantes
+  const handleSelectAllServers = () => {
+    const defaultPriceVal = bulkPrice !== "" ? Number(bulkPrice) : "";
+    const currentMap = new Map(
+      (formik.values.server_prices || []).map((p) => [p.server_id, p]),
+    );
+
+    const nextPrices: SubProductServerPriceFormValue[] = relevantServers.map(
+      (s) => {
+        const existing = currentMap.get(s.id);
+        return {
+          server_id: s.id,
+          price:
+            existing?.price !== undefined ? existing.price : defaultPriceVal,
+          is_active: existing?.is_active ?? true,
+        };
+      },
+    );
+
+    formik.setFieldValue("server_prices", nextPrices);
+  };
+
+  // Limpiar todos los servidores
   const handleClearServers = () => {
-    formik.setFieldValue("server_ids", []);
+    formik.setFieldValue("server_prices", []);
+  };
+
+  // Aplicar precio uniforme a todos los servidores seleccionados
+  const handleApplyBulkPrice = () => {
+    if (bulkPrice === "" || Number.isNaN(Number(bulkPrice))) return;
+    const numPrice = Number(bulkPrice);
+    const updated = (formik.values.server_prices || []).map((sp) => ({
+      ...sp,
+      price: numPrice,
+    }));
+    formik.setFieldValue("server_prices", updated);
   };
 
   // Cambio reactivo de subcategoria con actualizacion de campos dinamicos
@@ -313,6 +493,34 @@ export function SubproductFormModal({
       }
     };
   }, [filePreview]);
+
+  // Resumen dinamico de precios calculados
+  const priceSummary = useMemo(() => {
+    const activePrices = (formik.values.server_prices || [])
+      .filter((sp) => sp.price !== "" && !Number.isNaN(Number(sp.price)))
+      .map((sp) => Number(sp.price));
+
+    if (activePrices.length === 0) {
+      return { text: "Sin precios configurados", isRange: false, count: 0 };
+    }
+
+    const min = Math.min(...activePrices);
+    const max = Math.max(...activePrices);
+
+    if (min === max) {
+      return {
+        text: `$${min.toLocaleString("es-MX")} USD`,
+        isRange: false,
+        count: activePrices.length,
+      };
+    }
+
+    return {
+      text: `$${min.toLocaleString("es-MX")} - $${max.toLocaleString("es-MX")} USD`,
+      isRange: true,
+      count: activePrices.length,
+    };
+  }, [formik.values.server_prices]);
 
   // Controladores para campos dinamicos
   const handleStringFieldChange = (
@@ -382,6 +590,14 @@ export function SubproductFormModal({
     };
   }, [open, onClose]);
 
+  const serverPricesMap = useMemo(() => {
+    const map = new Map<number, SubProductServerPriceFormValue>();
+    for (const sp of formik.values.server_prices || []) {
+      map.set(sp.server_id, sp);
+    }
+    return map;
+  }, [formik.values.server_prices]);
+
   return (
     <MotionConfig reducedMotion="user">
       <AnimatePresence>
@@ -415,25 +631,32 @@ export function SubproductFormModal({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.97 }}
               transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
-              className="relative my-8 w-full max-w-[800px] rounded-xl border border-neon-primary/30 bg-bg-elevated shadow-[0_0_60px_-12px_rgba(0,240,255,0.4)]"
+              className="relative my-8 w-full max-w-[840px] rounded-xl border border-neon-primary/30 bg-bg-elevated shadow-[0_0_60px_-12px_rgba(0,240,255,0.4)]"
             >
               {/* ─── Header ─── */}
-              <header className="flex items-start justify-between gap-4 border-b border-white/5 px-6 py-5">
+              <header className="flex items-center justify-between border-b border-white/5 px-6 py-5">
                 <div>
                   <span
-                    data-text="CATALOGO :: SUBPRODUCTOS"
-                    className="glitch w-fit font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-neon-primary"
+                    data-text={
+                      isEdit
+                        ? "GESTION :: EDITAR SUBPRODUCTO"
+                        : "GESTION :: NUEVO SUBPRODUCTO"
+                    }
+                    className="glitch font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-neon-primary"
                   >
-                    Catalogo :: Subproductos
+                    {isEdit
+                      ? "Gestion :: Editar subproducto"
+                      : "Gestion :: Nuevo subproducto"}
                   </span>
                   <h2
                     id="subproduct-form-title"
                     className="mt-1 font-display text-xl font-semibold text-text-primary"
                   >
-                    {isEdit ? "Editar subproducto" : "Crear subproducto"}
+                    {isEdit
+                      ? `Editar subproducto #${subproduct?.id}`
+                      : "Crear nuevo subproducto"}
                   </h2>
                 </div>
-
                 <button
                   type="button"
                   onClick={onClose}
@@ -450,71 +673,35 @@ export function SubproductFormModal({
                 onSubmit={formik.handleSubmit}
                 noValidate
               >
-                {/* ─── Fila 1: Nombre y Precio ─── */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-12">
-                  <div className="sm:col-span-8">
-                    <Field
+                {/* ─── Fila 1: Nombre del Subproducto ─── */}
+                <div className="grid grid-cols-1 gap-4">
+                  <Field
+                    id="subproduct-form-name"
+                    label="Nombre del subproducto"
+                    error={formik.touched.name ? formik.errors.name : undefined}
+                  >
+                    <FormInput
                       id="subproduct-form-name"
-                      label="Nombre del subproducto"
-                      error={
-                        formik.touched.name ? formik.errors.name : undefined
+                      ref={nameInputRef}
+                      name="name"
+                      type="text"
+                      placeholder="ej. Paquete 1000 Diamantes / Rango VIP"
+                      value={formik.values.name}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      hasError={
+                        formik.touched.name && Boolean(formik.errors.name)
                       }
-                    >
-                      <FormInput
-                        id="subproduct-form-name"
-                        ref={nameInputRef}
-                        name="name"
-                        type="text"
-                        placeholder="ej. Intel Core i9-14900K 24-Core"
-                        value={formik.values.name}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        hasError={
-                          formik.touched.name && Boolean(formik.errors.name)
-                        }
-                        aria-invalid={
-                          formik.touched.name
-                            ? Boolean(formik.errors.name)
-                            : undefined
-                        }
-                      />
-                    </Field>
-                  </div>
-
-                  <div className="sm:col-span-4">
-                    <Field
-                      id="subproduct-form-price"
-                      label="Precio (USD)"
-                      error={
-                        formik.touched.price
-                          ? (formik.errors.price as string)
+                      aria-invalid={
+                        formik.touched.name
+                          ? Boolean(formik.errors.name)
                           : undefined
                       }
-                    >
-                      <FormInput
-                        id="subproduct-form-price"
-                        name="price"
-                        type="number"
-                        min="0"
-                        step="1"
-                        placeholder="ej. 599"
-                        value={formik.values.price}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        hasError={
-                          formik.touched.price && Boolean(formik.errors.price)
-                        }
-                        aria-invalid={
-                          formik.touched.price
-                            ? Boolean(formik.errors.price)
-                            : undefined
-                        }
-                      />
-                    </Field>
-                  </div>
+                    />
+                  </Field>
                 </div>
 
-                {/* ─── Fila 2: Relaciones (Producto, Subcategoria) ─── */}
+                {/* ─── Fila 2: Relaciones (Producto Padre, Subcategoria) ─── */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field
                     id="subproduct-form-product"
@@ -529,12 +716,11 @@ export function SubproductFormModal({
                       id="subproduct-form-product"
                       name="product_id"
                       value={formik.values.product_id}
-                      onChange={(e) =>
-                        formik.setFieldValue(
-                          "product_id",
-                          e.target.value === "" ? "" : Number(e.target.value),
-                        )
-                      }
+                      onChange={(e) => {
+                        const nextProdId =
+                          e.target.value === "" ? "" : Number(e.target.value);
+                        formik.setFieldValue("product_id", nextProdId);
+                      }}
                       onBlur={formik.handleBlur}
                       className="w-full cursor-pointer rounded-md border border-white/10 bg-bg-primary px-3 py-2 font-body text-xs text-text-primary transition-all focus:border-neon-primary focus:outline-none focus:ring-1 focus:ring-neon-primary"
                     >
@@ -578,18 +764,31 @@ export function SubproductFormModal({
                   </Field>
                 </div>
 
-                {/* ─── Fila 2.5: Selección Múltiple de Servidores ─── */}
-                <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-bg-surface p-4">
-                  <div className="flex items-center justify-between">
+                {/* ─── Fila 3: Precios por Servidor (Tarifas Dinamicas) ─── */}
+                <div className="flex flex-col gap-3 rounded-lg border border-white/10 bg-bg-surface p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-white/5 pb-3">
                     <div className="flex items-center gap-2">
                       <ServerIcon className="h-4 w-4 text-neon-primary" />
                       <span className="font-mono text-xs font-semibold uppercase tracking-wider text-text-primary">
-                        Servidores de Entrega (
-                        {formik.values.server_ids?.length || 0} seleccionados)
+                        Precios por Servidor (
+                        {formik.values.server_prices?.length || 0} configurados)
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 font-mono text-[11px]">
+                    {/* Resumen Dinamico del Precio */}
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[11px] text-text-muted">
+                        Resumen:
+                      </span>
+                      <span className="inline-flex items-center rounded border border-neon-primary/30 bg-neon-primary/10 px-2 py-0.5 font-mono text-xs font-bold text-neon-primary shadow-[0_0_10px_rgba(0,240,255,0.2)]">
+                        {priceSummary.text}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Acciones rapidas y aplicacion masiva de precios */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 font-mono text-xs">
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={handleSelectAllServers}
@@ -603,54 +802,151 @@ export function SubproductFormModal({
                         onClick={handleClearServers}
                         className="text-text-muted transition-colors hover:text-neon-pink cursor-pointer"
                       >
-                        Limpiar
+                        Limpiar seleccion
+                      </button>
+                    </div>
+
+                    {/* Helper: Aplicar precio masivo */}
+                    <div className="flex items-center gap-1.5">
+                      <label
+                        htmlFor="subproduct-form-bulk-price"
+                        className="sr-only"
+                      >
+                        Precio para todos los servidores
+                      </label>
+                      <input
+                        id="subproduct-form-bulk-price"
+                        name="subproduct-form-bulk-price"
+                        type="number"
+                        min="0"
+                        placeholder="Precio $ USD"
+                        value={bulkPrice}
+                        onChange={(e) => setBulkPrice(e.target.value)}
+                        className="w-28 rounded border border-white/10 bg-bg-primary px-2 py-1 font-mono text-xs text-text-primary focus:border-neon-primary focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyBulkPrice}
+                        disabled={bulkPrice === ""}
+                        className="inline-flex items-center gap-1 rounded border border-neon-primary/40 bg-neon-primary/10 px-2.5 py-1 font-mono text-xs font-semibold text-neon-primary transition-all hover:bg-neon-primary/20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        <BoltIcon className="h-3 w-3" />
+                        <span>Aplicar a seleccionados</span>
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 pt-1 max-h-36 overflow-y-auto">
-                    {relevantServers.length === 0 ? (
-                      <span className="font-mono text-xs text-text-muted italic">
-                        No hay servidores registrados para este producto.
-                      </span>
-                    ) : (
-                      relevantServers.map((s) => {
-                        const isSelected = formik.values.server_ids?.includes(
-                          s.id,
-                        );
+                  {/* Lista de servidores con input de precio individual */}
+                  {loadingPrices ? (
+                    <div className="py-4 text-center font-mono text-xs text-text-muted animate-pulse">
+                      Cargando tarifas de servidores...
+                    </div>
+                  ) : relevantServers.length === 0 ? (
+                    <span className="font-mono text-xs text-text-muted italic py-3">
+                      No hay servidores registrados para este producto padre.
+                    </span>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-2.5 pt-2 max-h-60 overflow-y-auto pr-1">
+                      {relevantServers.map((server) => {
+                        const configured = serverPricesMap.get(server.id);
+                        const isSelected = Boolean(configured);
+
                         return (
-                          <button
-                            key={s.id}
-                            type="button"
-                            onClick={() => handleToggleServer(s.id)}
-                            className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-mono text-xs font-medium transition-all cursor-pointer ${
+                          <div
+                            key={server.id}
+                            className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border p-3 transition-all ${
                               isSelected
-                                ? "border-neon-primary bg-neon-primary/15 text-neon-primary shadow-[0_0_12px_rgba(0,240,255,0.2)]"
-                                : "border-white/10 bg-bg-primary text-text-secondary hover:border-white/25 hover:text-text-primary"
+                                ? "border-neon-primary/40 bg-neon-primary/5 shadow-[0_0_12px_rgba(0,240,255,0.08)]"
+                                : "border-white/5 bg-bg-primary/40 opacity-70 hover:opacity-100"
                             }`}
                           >
-                            <span
-                              className={`h-1.5 w-1.5 rounded-full ${
-                                isSelected
-                                  ? "bg-neon-primary animate-pulse"
-                                  : "bg-text-muted"
-                              }`}
-                            />
-                            <span>{s.server_name}</span>
-                          </button>
-                        );
-                      })
-                    )}
-                  </div>
+                            {/* Checkbox selector + Nombre del servidor */}
+                            <div className="flex items-center gap-2.5">
+                              <label
+                                htmlFor={`server-toggle-${server.id}`}
+                                className="inline-flex items-center gap-2 cursor-pointer"
+                              >
+                                <input
+                                  id={`server-toggle-${server.id}`}
+                                  name={`server-toggle-${server.id}`}
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => handleToggleServer(server.id)}
+                                  className="h-4 w-4 rounded border-white/20 bg-bg-primary text-neon-primary focus:ring-neon-primary cursor-pointer"
+                                />
+                                <span className="font-display text-sm font-semibold text-text-primary">
+                                  {server.server_name}
+                                </span>
+                              </label>
+                              <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-text-muted">
+                                ID #{server.id}
+                              </span>
+                            </div>
 
-                  {formik.touched.server_ids && formik.errors.server_ids && (
-                    <span className="font-mono text-xs text-neon-pink mt-1">
-                      {formik.errors.server_ids as string}
-                    </span>
+                            {/* Controles de Precio y Estado por Servidor */}
+                            {isSelected && (
+                              <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1.5">
+                                  <label
+                                    htmlFor={`server-price-${server.id}`}
+                                    className="font-mono text-[11px] text-text-secondary whitespace-nowrap"
+                                  >
+                                    Precio ($ USD):
+                                  </label>
+                                  <input
+                                    id={`server-price-${server.id}`}
+                                    name={`server-price-${server.id}`}
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    placeholder="0"
+                                    value={configured?.price ?? ""}
+                                    onChange={(e) =>
+                                      handleServerPriceChange(
+                                        server.id,
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="w-24 rounded border border-white/15 bg-bg-primary px-2.5 py-1 font-mono text-xs font-bold text-neon-primary focus:border-neon-primary focus:outline-none focus:ring-1 focus:ring-neon-primary"
+                                  />
+                                </div>
+
+                                <label
+                                  htmlFor={`server-active-${server.id}`}
+                                  className="inline-flex items-center gap-1.5 font-mono text-[11px] text-text-muted cursor-pointer"
+                                  title="Disponibilidad en este servidor"
+                                >
+                                  <input
+                                    id={`server-active-${server.id}`}
+                                    name={`server-active-${server.id}`}
+                                    type="checkbox"
+                                    checked={configured?.is_active ?? true}
+                                    onChange={() =>
+                                      handleServerActiveToggle(server.id)
+                                    }
+                                    className="h-3.5 w-3.5 rounded border-white/20 bg-bg-primary text-neon-green focus:ring-neon-green cursor-pointer"
+                                  />
+                                  <span>Activo</span>
+                                </label>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
+
+                  {formik.touched.server_prices &&
+                    formik.errors.server_prices && (
+                      <span className="font-mono text-xs text-neon-pink mt-1">
+                        {typeof formik.errors.server_prices === "string"
+                          ? formik.errors.server_prices
+                          : "Configura al menos un servidor con un precio valido"}
+                      </span>
+                    )}
                 </div>
 
-                {/* ─── Fila 3: Imagen y Estado Activo ─── */}
+                {/* ─── Fila 4: Imagen y Estado General en Tienda ─── */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-12">
                   {/* Carga de Imagen */}
                   <div className="sm:col-span-8">
@@ -741,7 +1037,7 @@ export function SubproductFormModal({
                     </Field>
                   </div>
 
-                  {/* Toggle Activo */}
+                  {/* Toggle Activo General */}
                   <div className="flex flex-col justify-center rounded-lg border border-white/10 bg-bg-surface p-4 sm:col-span-4">
                     <label
                       htmlFor="subproduct-form-active"

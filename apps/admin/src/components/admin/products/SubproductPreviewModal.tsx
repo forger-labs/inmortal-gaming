@@ -54,9 +54,12 @@ export function SubproductPreviewModal({
   }, [categories, subcategory]);
 
   const assignedServers = useMemo(() => {
-    if (!subproduct?.server_ids) return [];
-    return servers.filter((s) => subproduct.server_ids.includes(s.id));
-  }, [servers, subproduct?.server_ids]);
+    if (!subproduct) return [];
+    const fromPrices = (subproduct.prices || []).map((p) => p.server_id);
+    const fromServerIds = subproduct.server_ids || [];
+    const allIds = Array.from(new Set([...fromPrices, ...fromServerIds]));
+    return servers.filter((s) => allIds.includes(s.id));
+  }, [servers, subproduct]);
 
   const imageUrl = subproduct ? getR2ImageUrl(subproduct.image) : "";
 
@@ -123,7 +126,7 @@ export function SubproductPreviewModal({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.97 }}
               transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
-              className="relative my-8 w-full max-w-[760px] rounded-xl border border-neon-primary/30 bg-bg-elevated shadow-[0_0_60px_-12px_rgba(0,240,255,0.4)]"
+              className="relative my-8 w-full max-w-[780px] rounded-xl border border-neon-primary/30 bg-bg-elevated shadow-[0_0_60px_-12px_rgba(0,240,255,0.4)]"
             >
               {/* ─── Header ─── */}
               <header className="flex items-start justify-between gap-4 border-b border-white/5 px-6 py-5">
@@ -209,7 +212,7 @@ export function SubproductPreviewModal({
 
                       <div>
                         <span className="block font-mono text-[10px] uppercase tracking-wider text-text-muted">
-                          Estado
+                          Estado General
                         </span>
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-xs font-semibold ${
@@ -229,43 +232,63 @@ export function SubproductPreviewModal({
                         </span>
                       </div>
                     </div>
+                  </div>
+                </div>
 
-                    {/* Lista de Servidores */}
-                    <div className="border-t border-white/5 pt-2.5">
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <ServerIcon className="h-3.5 w-3.5 text-neon-primary" />
-                        <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
-                          Servidores ({assignedServers.length}):
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {assignedServers.length === 0 ? (
-                          <span className="font-mono text-xs text-text-muted italic">
-                            Sin servidores asignados
-                          </span>
-                        ) : (
-                          assignedServers.map((srv) => (
-                            <span
-                              key={srv.id}
-                              className="inline-flex items-center rounded border border-neon-primary/25 bg-neon-primary/10 px-2 py-0.5 font-mono text-[11px] text-neon-primary"
-                            >
-                              {srv.server_name}
+                {/* ─── Tarifas y Servidores Asignados ─── */}
+                <div className="flex flex-col gap-3 rounded-lg border border-white/10 bg-bg-surface/50 p-4">
+                  <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+                    <ServerIcon className="h-4 w-4 text-neon-primary" />
+                    <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-neon-primary">
+                      Tarifas por Servidor ({assignedServers.length} asignados)
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-52 overflow-y-auto">
+                    {assignedServers.length === 0 ? (
+                      <span className="col-span-full font-mono text-xs text-text-muted italic">
+                        Sin servidores o tarifas registradas
+                      </span>
+                    ) : (
+                      assignedServers.map((srv) => {
+                        const priceItem = (subproduct.prices || []).find(
+                          (p) => p.server_id === srv.id,
+                        );
+                        const srvPrice =
+                          priceItem !== undefined
+                            ? `$${priceItem.price.toLocaleString("es-MX")} USD`
+                            : typeof subproduct.price === "number"
+                              ? `$${subproduct.price.toLocaleString("es-MX")} USD`
+                              : "Sin precio";
+
+                        const isServerActive =
+                          priceItem?.is_active !== undefined
+                            ? priceItem.is_active
+                            : true;
+
+                        return (
+                          <div
+                            key={srv.id}
+                            className="flex items-center justify-between rounded-lg border border-white/10 bg-bg-primary/70 p-3 font-mono text-xs"
+                          >
+                            <div className="flex flex-col min-w-0 pr-2">
+                              <span className="font-semibold text-text-primary truncate">
+                                {srv.server_name}
+                              </span>
+                              <span className="text-[10px] text-text-muted">
+                                ID #{srv.id} ::{" "}
+                                {isServerActive
+                                  ? "Habilitado"
+                                  : "Deshabilitado"}
+                              </span>
+                            </div>
+                            <span className="font-bold text-neon-primary shrink-0">
+                              {srvPrice}
                             </span>
-                          ))
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-white/5 pt-3">
-                      <div>
-                        <span className="block font-mono text-[10px] uppercase tracking-wider text-text-muted">
-                          Precio
-                        </span>
-                        <span className="font-mono text-lg font-bold text-neon-primary">
-                          ${subproduct.price.toLocaleString("es-MX")} USD
-                        </span>
-                      </div>
-                    </div>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
 

@@ -1,34 +1,72 @@
 "use client";
 
 import { CartIcon, WhatsAppIcon } from "@shared/icons";
-import { cyberSuccess } from "@shared/toasts";
-import type { ServerEntity, SubProductEntity } from "@shared/types";
+import { cyberError, cyberSuccess } from "@shared/toasts";
+import type {
+  ItemPriceEntity,
+  ServerEntity,
+  SubProductEntity,
+} from "@shared/types";
 import { useState } from "react";
+
+import { BUSINESS_WHATSAPP } from "@/constants";
+import { useCart } from "@/context/CartContext";
 
 interface SubproductActionsProps {
   subproduct: SubProductEntity;
   selectedServer?: ServerEntity | null;
+  selectedItemPrice?: ItemPriceEntity | null;
+  currentPrice?: number;
 }
 
 export function SubproductActions({
   subproduct,
   selectedServer,
+  selectedItemPrice,
+  currentPrice,
 }: SubproductActionsProps) {
+  const { addToCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
 
-  const handleAddToCart = () => {
+  const activePrice =
+    currentPrice !== undefined
+      ? currentPrice
+      : typeof subproduct.price === "number"
+        ? subproduct.price
+        : 0;
+
+  const handleAddToCart = async () => {
+    if (isAdding) return;
     setIsAdding(true);
 
-    const serverDetail = selectedServer
-      ? ` (${selectedServer.server_name})`
-      : "";
-    setTimeout(() => {
-      setIsAdding(false);
+    try {
+      const itemPriceId = selectedItemPrice?.id ?? 0;
+      await addToCart({
+        sub_product_id: subproduct.id,
+        item_price_id: itemPriceId,
+        quantity: 1,
+        product_name: subproduct.name,
+        price: activePrice,
+        image: subproduct.image,
+        server_name: selectedServer?.server_name,
+      });
+
+      const serverDetail = selectedServer
+        ? ` (${selectedServer.server_name} - $${activePrice.toFixed(2)} USD)`
+        : "";
       cyberSuccess(
         `"${subproduct.name}"${serverDetail} agregado al carrito correctamente.`,
         "[CARRITO]",
       );
-    }, 250);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "No se pudo agregar el producto al carrito";
+      cyberError(msg, "[ERROR]");
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   const handleWhatsAppInquiry = () => {
@@ -36,10 +74,10 @@ export function SubproductActions({
       ? ` en servidor "${selectedServer.server_name}"`
       : "";
     const message = encodeURIComponent(
-      `Hola Inmortal Gaming, estoy interesado en el subproducto "${subproduct.name}"${serverInfo} (Precio: $${subproduct.price} USD).`,
+      `Hola Inmortal Gaming, estoy interesado en el subproducto "${subproduct.name}"${serverInfo} (Precio: $${activePrice.toFixed(2)} USD).`,
     );
     window.open(
-      `https://wa.me/?text=${message}`,
+      `https://wa.me/${BUSINESS_WHATSAPP}?text=${message}`,
       "_blank",
       "noopener,noreferrer",
     );
@@ -59,20 +97,25 @@ export function SubproductActions({
       {selectedServer && (
         <div className="flex items-center justify-between rounded border border-white/5 bg-white/5 px-3 py-1.5 font-mono text-xs text-text-secondary">
           <span className="text-text-muted">Servidor seleccionado:</span>
-          <span className="font-semibold text-neon-primary">
-            {selectedServer.server_name}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-neon-primary">
+              {selectedServer.server_name}
+            </span>
+            <span className="font-bold text-neon-green">
+              (${activePrice.toFixed(2)} USD)
+            </span>
+          </div>
         </div>
       )}
 
-      {/* Add to Cart Button (NO QUANTITY DISPLAYED) */}
+      {/* Add to Cart Button */}
       <button
         type="button"
         disabled={!subproduct.is_active || isAdding}
         onClick={handleAddToCart}
         className={`relative flex w-full items-center justify-center gap-2.5 rounded-lg py-4 font-display text-base font-bold uppercase tracking-wider transition-all duration-200 ${
           subproduct.is_active
-            ? "btn-neon-primary hover:scale-[1.01] active:scale-[0.99]"
+            ? "btn-neon-primary hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
             : "cursor-not-allowed border border-border-subtle bg-bg-surface-hover text-text-muted opacity-60"
         }`}
       >
@@ -81,7 +124,7 @@ export function SubproductActions({
           {isAdding
             ? "AGREGANDO AL CARRITO..."
             : subproduct.is_active
-              ? "AGREGAR AL CARRITO"
+              ? `AGREGAR AL CARRITO - $${activePrice.toFixed(2)} USD`
               : "PRODUCTO AGOTADO"}
         </span>
       </button>

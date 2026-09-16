@@ -18,10 +18,34 @@ export function ProductSubproductCard({
   serverName,
 }: ProductSubproductCardProps) {
   const imageUrl = getR2ImageUrl(subproduct.image);
-  const formattedPrice =
-    typeof subproduct.price === "number"
-      ? subproduct.price.toFixed(2)
-      : Number(subproduct.price || 0).toFixed(2);
+
+  const formattedPrice = (() => {
+    let formattedPrice: string;
+    if (typeof selectedServerId === "undefined") {
+      formattedPrice = "0.00";
+      return formattedPrice;
+    }
+
+    if (selectedServerId === "all") {
+      formattedPrice = subproduct?.servers?.[0]?.price
+        ? subproduct?.servers[0]?.price.toFixed(2)
+        : "0.00";
+      return formattedPrice;
+    }
+
+    if (subproduct?.servers && subproduct?.servers?.length > 0) {
+      const server = subproduct.servers.find(
+        (srv) => srv.id === selectedServerId,
+      );
+      if (!server) {
+        formattedPrice = "0.00";
+        return formattedPrice;
+      }
+      formattedPrice = server.price.toFixed(2);
+      return formattedPrice;
+    }
+    return "0.00"
+  })();
 
   const displayServerBadge = (() => {
     if (serverName) return serverName;

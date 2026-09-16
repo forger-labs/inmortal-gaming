@@ -98,10 +98,6 @@ export function ProductCard({ product, itemType }: ProductCardProps) {
 
         {/* Bottom: price + cart */}
         <div className="mt-auto flex items-center justify-between border-t border-border-subtle pt-4">
-          <span className="font-mono text-xl font-bold text-neon-primary">
-            $ {product.price.toFixed(2)}
-          </span>
-
           <button
             type="button"
             onClick={(e) => e.preventDefault()}

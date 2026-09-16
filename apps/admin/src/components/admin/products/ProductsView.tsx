@@ -155,12 +155,7 @@ export function ProductsView() {
           name: values.name.trim(),
           description: values.description.trim(),
           category_id: Number(values.category_id),
-          image:
-            values.image instanceof File
-              ? values.image
-              : typeof values.image === "string"
-                ? values.image.trim()
-                : undefined,
+          image: values.image instanceof File ? values.image : undefined,
           is_active: values.is_active,
         });
 

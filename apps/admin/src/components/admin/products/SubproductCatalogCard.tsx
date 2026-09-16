@@ -109,11 +109,40 @@ export function SubproductCatalogCard({
         <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-3">
           <div className="flex flex-col">
             <span className="font-mono text-[10px] uppercase text-text-muted">
-              Precio
+              Tarifa Servidores
             </span>
-            <span className="font-mono text-base font-bold text-neon-primary">
-              ${subproduct.price.toLocaleString("es-MX")}
-            </span>
+            {(() => {
+              const pricesList = (subproduct.prices || []).map((p) => p.price);
+              if (pricesList.length === 0) {
+                if (typeof subproduct.price === "number") {
+                  return (
+                    <span className="font-mono text-base font-bold text-neon-primary">
+                      ${subproduct.price.toLocaleString("es-MX")} USD
+                    </span>
+                  );
+                }
+                return (
+                  <span className="font-mono text-xs text-text-muted italic">
+                    Sin precio
+                  </span>
+                );
+              }
+              const min = Math.min(...pricesList);
+              const max = Math.max(...pricesList);
+              if (min === max) {
+                return (
+                  <span className="font-mono text-base font-bold text-neon-primary">
+                    ${min.toLocaleString("es-MX")} USD
+                  </span>
+                );
+              }
+              return (
+                <span className="font-mono text-sm font-bold text-neon-primary">
+                  ${min.toLocaleString("es-MX")} ~ $
+                  {max.toLocaleString("es-MX")} USD
+                </span>
+              );
+            })()}
           </div>
 
           <div className="flex items-center gap-1">

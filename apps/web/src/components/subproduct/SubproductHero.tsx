@@ -1,4 +1,4 @@
-import { ProductsIcon } from "@shared/icons";
+import { ProductsIcon, ServerIcon } from "@shared/icons";
 import type {
   CategoryEntity,
   ProductEntity,
@@ -14,6 +14,9 @@ interface SubproductHeroProps {
   product?: ProductEntity | null;
   subcategory?: SubcategoryEntity | null;
   category?: CategoryEntity | null;
+  currentPrice?: number;
+  priceRange?: { min: number; max: number; isRange: boolean };
+  selectedServerName?: string;
 }
 
 export function SubproductHero({
@@ -21,11 +24,16 @@ export function SubproductHero({
   product,
   subcategory,
   category,
+  currentPrice,
+  priceRange,
+  selectedServerName,
 }: SubproductHeroProps) {
-  const formattedPrice =
-    typeof subproduct.price === "number"
-      ? subproduct.price.toFixed(2)
-      : Number(subproduct.price || 0).toFixed(2);
+  const displayPrice =
+    currentPrice !== undefined
+      ? currentPrice.toFixed(2)
+      : typeof subproduct.price === "number"
+        ? subproduct.price.toFixed(2)
+        : Number(subproduct.price || 0).toFixed(2);
 
   return (
     <div className="flex flex-col gap-4">
@@ -69,19 +77,34 @@ export function SubproductHero({
         )}
       </div>
 
-      {/* Price Bar */}
-      <div className="flex items-baseline gap-3 rounded-lg border border-border-subtle bg-bg-surface/60 p-4 backdrop-blur-sm">
+      {/* Dynamic Price Bar */}
+      <div className="flex flex-col gap-2 rounded-lg border border-border-subtle bg-bg-surface/60 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col">
           <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-text-muted">
-            PRECIO FINAL
+            {selectedServerName
+              ? `PRECIO FINAL (${selectedServerName})`
+              : "PRECIO FINAL"}
           </span>
-          <div className="flex items-baseline gap-1">
-            <span className="font-mono text-2xl font-bold text-neon-primary sm:text-3xl">
-              $ {formattedPrice}
-            </span>
+          <div className="flex items-baseline gap-1.5">
+            {priceRange?.isRange && !selectedServerName ? (
+              <span className="font-mono text-2xl font-bold text-neon-primary sm:text-3xl">
+                $ {priceRange.min.toFixed(2)} - {priceRange.max.toFixed(2)}
+              </span>
+            ) : (
+              <span className="font-mono text-2xl font-bold text-neon-primary sm:text-3xl">
+                $ {displayPrice}
+              </span>
+            )}
             <span className="font-mono text-xs text-text-muted">USD</span>
           </div>
         </div>
+
+        {selectedServerName && (
+          <div className="flex items-center gap-1.5 self-start rounded border border-neon-primary/30 bg-neon-primary/10 px-3 py-1 font-mono text-xs font-semibold text-neon-primary sm:self-center">
+            <ServerIcon className="h-3.5 w-3.5 text-neon-primary" />
+            <span>Servidor: {selectedServerName}</span>
+          </div>
+        )}
       </div>
     </div>
   );
