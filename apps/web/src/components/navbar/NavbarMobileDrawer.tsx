@@ -7,6 +7,7 @@ import {
   CloseIcon,
   GridIcon,
   OrdersIcon,
+  SearchIcon,
   UserIcon,
 } from "@shared/icons";
 import type {
@@ -31,6 +32,7 @@ interface NavbarMobileDrawerProps {
   totalItems: number;
   onLogout: () => void;
   onOpenLogin: () => void;
+  onOpenSearch: () => void;
 }
 
 export function NavbarMobileDrawer({
@@ -44,6 +46,7 @@ export function NavbarMobileDrawer({
   totalItems,
   onLogout,
   onOpenLogin,
+  onOpenSearch,
 }: NavbarMobileDrawerProps) {
   const [expandedCatId, setExpandedCatId] = useState<number | null>(
     categories[0]?.id || null,
@@ -112,8 +115,30 @@ export function NavbarMobileDrawer({
                 </button>
               </div>
 
+              {/* Search Bar Button in Drawer */}
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenSearch();
+                  }}
+                  className="flex w-full items-center justify-between rounded-xl border border-border-subtle bg-bg-surface-hover/80 px-3.5 py-2.5 text-xs text-text-secondary transition-all hover:border-neon-primary/50 hover:text-text-primary cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <SearchIcon className="h-4 w-4 text-neon-primary" />
+                    <span className="font-body text-xs text-text-muted">
+                      Buscar productos o subproductos...
+                    </span>
+                  </div>
+                  <kbd className="rounded border border-white/10 bg-bg-primary px-1.5 py-0.5 font-mono text-[10px] text-text-muted">
+                    Buscar
+                  </kbd>
+                </button>
+              </div>
+
               {/* Quick Primary Links */}
-              <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="mt-3 grid grid-cols-2 gap-2">
                 <Link
                   href={ROUTES.catalog}
                   onClick={onClose}
@@ -285,7 +310,7 @@ export function NavbarMobileDrawer({
                       onClose();
                       onLogout();
                     }}
-                    className="mt-2 w-full rounded-lg border border-neon-pink/40 bg-neon-pink/10 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-neon-pink transition-colors hover:bg-neon-pink hover:text-white"
+                    className="mt-2 w-full rounded-lg border border-neon-pink/40 bg-neon-pink/10 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-neon-pink transition-colors hover:bg-neon-pink hover:text-white cursor-pointer"
                   >
                     Cerrar Sesión
                   </button>
@@ -297,7 +322,7 @@ export function NavbarMobileDrawer({
                     onClose();
                     onOpenLogin();
                   }}
-                  className="btn-neon w-full rounded-xl py-3 text-center font-display text-sm font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(0,240,255,0.3)]"
+                  className="btn-neon w-full rounded-xl py-3 text-center font-display text-sm font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(0,240,255,0.3)] cursor-pointer"
                 >
                   Ingresar / Registrarse
                 </button>

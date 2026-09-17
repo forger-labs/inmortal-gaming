@@ -56,8 +56,8 @@ export interface CartContextValue {
   clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
   createOrder: (payload: CreateOrderPayload) => Promise<OrderEntity>;
-  priceInBs: boolean,
-  setPriceInBs: Dispatch<SetStateAction<boolean>>
+  priceInBs: boolean;
+  setPriceInBs: Dispatch<SetStateAction<boolean>>;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -346,9 +346,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       refreshCart,
       createOrder,
       priceInBs,
-      setPriceInBs
+      setPriceInBs,
     }),
-    [priceInBs,
+    [
+      priceInBs,
       items,
       totalItems,
       totalPrice,

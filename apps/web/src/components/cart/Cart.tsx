@@ -9,7 +9,7 @@ import { useCart } from "@/context/CartContext";
 import { CartItem } from "./CartItem";
 import { CartSummary } from "./CartSummary";
 
-export function Cart({rate}:{rate:number}) {
+export function Cart({ rate }: { rate: number }) {
   const { items, loading, totalItems, updateQuantity, removeItem, clearCart } =
     useCart();
 

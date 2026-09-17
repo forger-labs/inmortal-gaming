@@ -50,7 +50,7 @@ export default function ProfileUnauthenticated({
           </button>
 
           <Link
-            href={ROUTES.catalogo}
+            href={ROUTES.catalog}
             className="inline-flex items-center gap-2 rounded border border-white/10 bg-bg-surface px-6 py-3 font-display text-xs font-semibold uppercase tracking-wider text-text-secondary transition-colors hover:border-neon-primary/40 hover:text-text-primary"
           >
             Explorar Catalogo

@@ -2,6 +2,7 @@ import type { RegisterUserDTO, UserEntity, UserMeDTO } from "@shared/types";
 
 /* ─── Inmortal Gaming — Shared Types ─── */
 export * from "./products";
+export * from "./search";
 export * from "./subproduct";
 
 export interface NavLink {

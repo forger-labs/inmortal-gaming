@@ -5,6 +5,7 @@ import {
   ChevronDownIcon,
   CloseIcon,
   MenuIcon,
+  SearchIcon,
   UsersIcon,
 } from "@shared/icons";
 import { cyberInfo } from "@shared/toasts";
@@ -19,6 +20,8 @@ import { useEffect, useRef, useState } from "react";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { NavbarCategoryDropdown } from "@/components/navbar/NavbarCategoryDropdown";
 import { NavbarMobileDrawer } from "@/components/navbar/NavbarMobileDrawer";
+import { NavbarSearchTrigger } from "@/components/navbar/NavbarSearchTrigger";
+import { SearchModal } from "@/components/navbar/SearchModal";
 import { ROUTES } from "@/constants";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
@@ -31,7 +34,8 @@ const STATIC_NAV_LINKS: NavLink[] = [
 ];
 
 /**
- * Navbar component with dynamic categories, mega-dropdown and slide-in mobile drawer.
+ * Navbar component with dynamic categories, search command palette trigger,
+ * mega-dropdown, and slide-in mobile drawer.
  *
  * NOTE FOR FUTURE REFACTORING:
  * Currently, the navbar dynamically loads the first 3 categories returned by `GET /categories`
@@ -42,6 +46,7 @@ const STATIC_NAV_LINKS: NavLink[] = [
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
 
   // Dynamic categories and subcategory state
@@ -133,24 +138,24 @@ export function Navbar() {
 
   const handleLogout = async () => {
     await logout();
-    cyberInfo("Sesion cerrada correctamente.", "[SESION]");
+    cyberInfo("Sesión cerrada correctamente.", "[SESIÓN]");
   };
 
   return (
     <>
-      <nav className="glass-nav fixed top-0 left-0 right-0 z-50 px-6 md:px-12">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between">
+      <nav className="glass-nav fixed top-0 left-0 right-0 z-50 px-4 md:px-8 lg:px-12">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4">
           {/* Logo */}
           <Link
             href={ROUTES.home}
-            className="glitch text-2xl font-display font-bold tracking-tight"
+            className="glitch text-xl sm:text-2xl font-display font-bold tracking-tight shrink-0"
             data-text="INMORTAL GAMING"
           >
             INMORTAL GAMING
           </Link>
 
           {/* Desktop nav links */}
-          <div className="hidden items-center gap-6 lg:gap-8 md:flex">
+          <div className="hidden items-center gap-5 lg:gap-7 md:flex">
             <Link
               href={ROUTES.catalog}
               className="font-body text-sm font-semibold text-text-secondary transition-colors hover:text-neon-primary"
@@ -218,8 +223,26 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Right side */}
-          <div className="flex items-center gap-4">
+          {/* Search Trigger (Desktop & Tablet) */}
+          <div className="hidden md:flex flex-1 max-w-xs justify-end">
+            <NavbarSearchTrigger
+              onClick={() => setSearchOpen(true)}
+              className="w-48 lg:w-56"
+            />
+          </div>
+
+          {/* Right side actions */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Mobile Search Button */}
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="p-2 text-text-secondary transition-colors hover:text-neon-primary md:hidden cursor-pointer"
+              aria-label="Buscar en el catálogo"
+            >
+              <SearchIcon className="h-5 w-5" />
+            </button>
+
             {/* Cart */}
             <Link
               href={ROUTES.cart}
@@ -239,7 +262,7 @@ export function Navbar() {
               <div className="hidden items-center gap-2 sm:flex">
                 <Link
                   href={ROUTES.profile}
-                  className="flex max-w-[180px] items-center gap-2 rounded border border-border-subtle bg-bg-surface px-3 py-1.5 text-xs text-text-secondary transition-colors hover:border-neon-primary/50 hover:text-neon-primary"
+                  className="flex max-w-[160px] items-center gap-2 rounded border border-border-subtle bg-bg-surface px-3 py-1.5 text-xs text-text-secondary transition-colors hover:border-neon-primary/50 hover:text-neon-primary"
                   title="Ver perfil"
                 >
                   <UsersIcon className="h-4 w-4 shrink-0 text-neon-primary" />
@@ -257,7 +280,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => setLoginOpen(true)}
-                className="btn-neon hidden rounded px-4 py-2 text-xs font-semibold uppercase tracking-wider sm:inline-flex"
+                className="btn-neon hidden rounded px-4 py-2 text-xs font-semibold uppercase tracking-wider sm:inline-flex cursor-pointer"
               >
                 Ingresar
               </button>
@@ -265,7 +288,7 @@ export function Navbar() {
 
             {/* Mobile hamburger */}
             <button
-              className="p-2 text-text-secondary transition-colors hover:text-neon-primary md:hidden"
+              className="p-2 text-text-secondary transition-colors hover:text-neon-primary md:hidden cursor-pointer"
               aria-label="Abrir menú móvil"
               type="button"
               onClick={() => setMobileOpen(true)}
@@ -292,9 +315,11 @@ export function Navbar() {
         totalItems={totalItems}
         onLogout={handleLogout}
         onOpenLogin={() => setLoginOpen(true)}
+        onOpenSearch={() => setSearchOpen(true)}
       />
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }

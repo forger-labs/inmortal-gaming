@@ -28,7 +28,7 @@ export default function OrdersEmptyState() {
 
       <div className="mt-6">
         <Link
-          href={ROUTES.catalogo}
+          href={ROUTES.catalog}
           className="inline-flex items-center gap-2 rounded bg-neon-primary px-6 py-3 font-display text-xs font-semibold uppercase tracking-wider text-bg-primary transition-all hover:shadow-[0_0_20px_rgba(0,240,255,0.4)]"
         >
           Explorar Catalogo

@@ -5,6 +5,7 @@ import "./globals.css";
 
 import { Footer } from "@/components/footer/Footer";
 import { Navbar } from "@/components/navbar/Navbar";
+import WhatsAppFloat from "@/components/WhatsappFloat";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 
@@ -59,6 +60,7 @@ export default function RootLayout({
             <Footer />
             <CyberToaster />
           </CartProvider>
+          <WhatsAppFloat />
         </AuthProvider>
       </body>
     </html>

@@ -1,11 +1,12 @@
-import { BUSINESS_WHATSAPP } from "@/constants";
 import { WhatsAppIcon } from "@shared/icons";
 import Link from "next/link";
+
+import { BUSINESS_WHATSAPP } from "@/constants";
 
 const messageText = [
   "*INMORTAL GAMING — SOPORTE*",
   "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-  "Hola, quiero atencion personalizada para mi próxima compra"
+  "Hola, quiero atencion personalizada para mi próxima compra",
 ]
   .filter(Boolean)
   .join("\n");

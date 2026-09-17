@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CartPage() {
-  const rate = await getBinanceRate()
+  const rate = await getBinanceRate();
 
   return (
     <main className="relative min-h-screen pt-20 pb-24 overflow-hidden">

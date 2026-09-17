@@ -38,7 +38,7 @@ export function SubproductNotFound({
         )}
 
         <Link
-          href={ROUTES.catalogo}
+          href={ROUTES.catalog}
           className="btn-neon inline-flex items-center gap-2 rounded px-6 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider"
         >
           <ChevronLeftIcon className="h-4 w-4" />

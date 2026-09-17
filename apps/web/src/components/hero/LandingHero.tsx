@@ -1,7 +1,8 @@
-import { ROUTES } from "@/constants";
 import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
+
+import { ROUTES } from "@/constants";
 
 function riseIn(delay: number): CSSProperties {
   return { "--i": delay } as CSSProperties;

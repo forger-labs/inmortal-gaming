@@ -26,7 +26,7 @@ export function CartItem({
   onRemove,
   disabled = false,
 }: CartItemProps) {
-  const {  priceInBs } = useCart();
+  const { priceInBs } = useCart();
 
   const imageUrl = getR2ImageUrl(item.image);
   const lineTotal = (item.price || 0) * (item.quantity || 1);
@@ -89,7 +89,11 @@ export function CartItem({
             <p className="font-mono text-xs text-text-secondary">
               Precio unitario:{" "}
               <span className="font-semibold text-text-primary">
-                ${priceInBs ? (item.price * rate).toFixed(2) : item.price.toFixed(2)} {priceInBs ? "VES" : "USD"}
+                $
+                {priceInBs
+                  ? (item.price * rate).toFixed(2)
+                  : item.price.toFixed(2)}{" "}
+                {priceInBs ? "VES" : "USD"}
               </span>
             </p>
           </div>
@@ -141,8 +145,10 @@ export function CartItem({
           <div className="text-right">
             <span className="font-mono text-lg font-bold text-neon-primary tabular-nums">
               {priceInBs ? "Bs. " : "$"}
-{lineTotalFmt.toFixed(2)}{" "}
-              <span className="text-xs font-normal text-text-muted">{priceInBs ? "VES" : "USD"}</span>
+              {lineTotalFmt.toFixed(2)}{" "}
+              <span className="text-xs font-normal text-text-muted">
+                {priceInBs ? "VES" : "USD"}
+              </span>
             </span>
           </div>
         </div>
