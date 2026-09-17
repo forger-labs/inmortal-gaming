@@ -44,7 +44,7 @@ export function ProductSubproductCard({
       formattedPrice = server.price.toFixed(2);
       return formattedPrice;
     }
-    return "0.00"
+    return "0.00";
   })();
 
   const displayServerBadge = (() => {

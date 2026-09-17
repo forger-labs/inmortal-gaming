@@ -17,6 +17,10 @@ import type {
   ItemPriceFilters,
   LandingItemEntity,
   LoginDTO,
+  OrderEntity,
+  OrderFilters,
+  OrderItemEntity,
+  OrderStatus,
   PaginatedResult,
   ProductCatalogEntity,
   ProductEntity,
@@ -28,10 +32,12 @@ import type {
   UpdateCategoryDTO,
   UpdateItemPriceDTO,
   UpdateLandingItemDTO,
+  UpdateOrderStatusDTO,
   UpdateProductDTO,
   UpdateServerDTO,
   UpdateSubcategoryDTO,
   UpdateSubProductDTO,
+  UserEntity,
 } from "@shared/types";
 import axios from "axios";
 
@@ -1795,6 +1801,213 @@ export default class AdminApi {
             ? error
             : (error as { message?: string })?.message ||
               "Error al actualizar el precio del item";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     MÓDULO ÓRDENES Y DETALLES DE PEDIDOS (`/v1/orders` y `/v1/order-items`)
+     ══════════════════════════════════════════════════════════════════ */
+
+  /**
+   * Obtiene la lista paginada de todas las órdenes con filtros opcionales (`GET /orders`).
+   */
+  async getOrders(
+    page = 1,
+    limit = 10,
+    filter?: OrderFilters,
+  ): Promise<PaginatedResult<OrderEntity>> {
+    const result: ApiResponse<PaginatedResult<OrderEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      let queryParams = `page=${page}&limit=${limit}`;
+      if (
+        filter?.user_id !== undefined &&
+        filter.user_id !== "" &&
+        filter.user_id !== 0 &&
+        filter.user_id !== "0"
+      ) {
+        queryParams += `&user_id=${filter.user_id}`;
+      }
+      if (filter?.status && filter.status !== "all") {
+        queryParams += `&status=${encodeURIComponent(filter.status)}`;
+      }
+      if (
+        filter?.min_total_amount !== undefined &&
+        filter.min_total_amount !== ""
+      ) {
+        queryParams += `&min_total_amount=${filter.min_total_amount}`;
+      }
+      if (
+        filter?.max_total_amount !== undefined &&
+        filter.max_total_amount !== ""
+      ) {
+        queryParams += `&max_total_amount=${filter.max_total_amount}`;
+      }
+      if (filter?.created_at) {
+        queryParams += `&created_at=${encodeURIComponent(filter.created_at)}`;
+      }
+      if (filter?.sort_created_at) {
+        queryParams += `&sort_created_at=${filter.sort_created_at}`;
+      }
+
+      const response = await this.httpClient.get({
+        url: `/orders?${queryParams}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<OrderEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener las órdenes";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene los detalles de una orden por su identificador (`GET /orders/:id`).
+   */
+  async getOrderById(id: number | string): Promise<OrderEntity> {
+    const result: ApiResponse<OrderEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/orders/${id}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<OrderEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener la orden";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualiza el estado de una orden existente (`PATCH /orders/:id/status`).
+   */
+  async updateOrderStatus(
+    id: number | string,
+    status: OrderStatus,
+  ): Promise<OrderEntity> {
+    const result: ApiResponse<OrderEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const payload: UpdateOrderStatusDTO = { status };
+      const response = await this.httpClient.patch({
+        url: `/orders/${id}/status`,
+        body: payload,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<OrderEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al actualizar el estado de la orden";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista de ítems de una orden (`GET /order-items/:id`).
+   */
+  async getOrderItems(orderId: number | string): Promise<OrderItemEntity[]> {
+    const result: ApiResponse<OrderItemEntity[]> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/order-items/${orderId}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        OrderItemEntity[]
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener los ítems de la orden";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista de ítems de una orden (`GET /order-items/:id`).
+   */
+  async getUser(userId: number | string): Promise<UserEntity> {
+    const result: ApiResponse<UserEntity[]> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/users/${userId}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        UserEntity
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener al usuario";
         throw new Error(errorMessage);
       }
 

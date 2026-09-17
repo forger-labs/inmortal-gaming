@@ -42,3 +42,12 @@ export interface OrderItemEntity {
 export interface UpdateOrderStatusDTO {
   status: OrderStatus;
 }
+
+export interface OrderFilters {
+  user_id?: number | string;
+  status?: OrderStatus | "all";
+  min_total_amount?: number | string;
+  max_total_amount?: number | string;
+  created_at?: string;
+  sort_created_at?: "asc" | "desc";
+}

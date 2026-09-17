@@ -15,6 +15,7 @@ import type {
   LandingItemEntity,
   LoginUserDTO,
   OrderEntity,
+  OrderFilters,
   OrderItemEntity,
   PaginatedResult,
   ProductCatalogEntity,
@@ -619,6 +620,7 @@ export default class WebApi {
   async getMyOrders(
     page = 1,
     limit = 10,
+    filters?: OrderFilters,
   ): Promise<PaginatedResult<OrderEntity>> {
     const result: ApiResponse<PaginatedResult<OrderEntity>> = {
       data: null,
@@ -626,8 +628,31 @@ export default class WebApi {
       error: null,
     };
     try {
+      let queryParams = `page=${page}&limit=${limit}`;
+      if (filters?.status && filters.status !== "all") {
+        queryParams += `&status=${encodeURIComponent(filters.status)}`;
+      }
+      if (
+        filters?.min_total_amount !== undefined &&
+        filters.min_total_amount !== ""
+      ) {
+        queryParams += `&min_total_amount=${filters.min_total_amount}`;
+      }
+      if (
+        filters?.max_total_amount !== undefined &&
+        filters.max_total_amount !== ""
+      ) {
+        queryParams += `&max_total_amount=${filters.max_total_amount}`;
+      }
+      if (filters?.created_at) {
+        queryParams += `&created_at=${encodeURIComponent(filters.created_at)}`;
+      }
+      if (filters?.sort_created_at) {
+        queryParams += `&sort_created_at=${filters.sort_created_at}`;
+      }
+
       const response = await this.httpClient.get({
-        url: `/orders/my-orders?page=${page}&limit=${limit}`,
+        url: `/orders/my-orders?${queryParams}`,
       });
 
       const { success, data, error } = response.data as ApiResponse<
@@ -750,7 +775,7 @@ export default class WebApi {
   }
 
   /**
-   * Obtiene los detalles de una orden por su identificador (`GET /orders/:id`).
+   * Obtiene los detalles de una orden por su identificador (`GET /orders/my-orders/:id`).
    */
   async getOrderById(id: number | string): Promise<OrderEntity> {
     const result: ApiResponse<OrderEntity> = {
@@ -760,7 +785,7 @@ export default class WebApi {
     };
     try {
       const response = await this.httpClient.get({
-        url: `/orders/${id}`,
+        url: `/orders/my-orders/${id}`,
       });
 
       const { success, data, error } =
@@ -803,7 +828,7 @@ export default class WebApi {
     };
     try {
       const response = await this.httpClient.get({
-        url: `/orders/${orderId}/items`,
+        url: `/order-items/${orderId}`,
       });
 
       const { success, data, error } = response.data as ApiResponse<

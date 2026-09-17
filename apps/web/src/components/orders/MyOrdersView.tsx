@@ -2,7 +2,7 @@
 
 import { BoltIcon, OrdersIcon } from "@shared/icons";
 import { cyberError } from "@shared/toasts";
-import type { OrderEntity } from "@shared/types";
+import type { OrderEntity, OrderFilters } from "@shared/types";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 
@@ -11,10 +11,19 @@ import ProfileUnauthenticated from "@/components/profile/ProfileUnauthenticated"
 import { EASE_OUT_EXPO } from "@/constants";
 import { useAuth } from "@/context/AuthContext";
 import { webApi } from "@/libs/webApi";
+import MyOrdersFilterBar from "./MyOrdersFilterBar";
 import OrdersEmptyState from "./OrdersEmptyState";
 import OrdersList from "./OrdersList";
 import OrdersPagination from "./OrdersPagination";
 import OrdersSkeleton from "./OrdersSkeleton";
+
+const DEFAULT_FILTERS: OrderFilters = {
+  status: "all",
+  sort_created_at: "desc",
+  created_at: undefined,
+  min_total_amount: undefined,
+  max_total_amount: undefined,
+};
 
 export default function MyOrdersView() {
   const { user, isAuthenticated, accessToken, getMe } = useAuth();
@@ -25,9 +34,16 @@ export default function MyOrdersView() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<OrderFilters>(DEFAULT_FILTERS);
 
   const fetchOrders = useCallback(
-    async (pageToFetch = 1, isBackground = false) => {
+    async (
+      pageToFetch = 1,
+      isBackground = false,
+      currentFilters = filters,
+      query = searchQuery,
+    ) => {
       if (!isBackground) {
         setLoading(true);
       } else {
@@ -36,8 +52,25 @@ export default function MyOrdersView() {
       setError(null);
 
       try {
-        const response = await webApi.getMyOrders(pageToFetch, 10);
-        setOrders(response.items || []);
+        const payloadFilter: OrderFilters = { ...currentFilters };
+        const response = await webApi.getMyOrders(
+          pageToFetch,
+          10,
+          payloadFilter,
+        );
+
+        let items = response.items || [];
+        const trimmed = query.trim().toLowerCase();
+        if (trimmed) {
+          items = items.filter(
+            (o) =>
+              String(o.id).includes(trimmed) ||
+              o.payment_method?.toLowerCase().includes(trimmed) ||
+              o.status?.toLowerCase().includes(trimmed),
+          );
+        }
+
+        setOrders(items);
         setTotal(response.total || 0);
         setTotalPages(response.total_pages || 1);
         setPage(response.page || pageToFetch);
@@ -53,7 +86,7 @@ export default function MyOrdersView() {
         setRefreshing(false);
       }
     },
-    [],
+    [filters, searchQuery],
   );
 
   useEffect(() => {
@@ -63,7 +96,7 @@ export default function MyOrdersView() {
         await getMe();
       }
       if (mounted && isAuthenticated) {
-        await fetchOrders(1);
+        await fetchOrders(page, false, filters, searchQuery);
       } else if (mounted) {
         setLoading(false);
       }
@@ -74,16 +107,35 @@ export default function MyOrdersView() {
     return () => {
       mounted = false;
     };
-  }, [accessToken, isAuthenticated, user, getMe, fetchOrders]);
+  }, [
+    accessToken,
+    isAuthenticated,
+    user,
+    getMe,
+    fetchOrders,
+    page,
+    filters,
+    searchQuery,
+  ]);
+
+  const handleFiltersChange = (next: OrderFilters) => {
+    setFilters(next);
+    setPage(1);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setPage(1);
+  };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    void fetchOrders(newPage);
+    void fetchOrders(newPage, false, filters, searchQuery);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleRefresh = () => {
-    void fetchOrders(page, true);
+    void fetchOrders(page, true, filters, searchQuery);
   };
 
   if (!isAuthenticated && !loading) {
@@ -139,13 +191,22 @@ export default function MyOrdersView() {
         {/* Pestanas de navegacion */}
         <ProfileNavTabs />
 
+        {/* Barra de Filtros */}
+        <MyOrdersFilterBar
+          filters={filters}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          onFiltersChange={handleFiltersChange}
+          resultCount={orders.length}
+        />
+
         {/* Informacion de estado */}
         {error && (
           <div className="flex items-center justify-between rounded-xl border border-neon-pink/30 bg-neon-pink/10 p-4 text-sm text-neon-pink">
             <span>{error}</span>
             <button
               type="button"
-              onClick={() => fetchOrders(page)}
+              onClick={() => fetchOrders(page, false, filters, searchQuery)}
               className="cursor-pointer underline font-semibold hover:text-white"
             >
               Reintentar

@@ -1,11 +1,9 @@
 "use client";
 
-import { ShieldCheckIcon, WalletIcon, WhatsAppIcon } from "@shared/icons";
-import { Field, Form, Formik } from "formik";
+import { WalletIcon } from "@shared/icons";
 import { motion } from "framer-motion";
 
 import { EASE_OUT_EXPO } from "@/constants";
-import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { CartForm } from "./CartForm";
 
@@ -15,7 +13,7 @@ import { CartForm } from "./CartForm";
 // };
 
 export function CartSummary() {
-  const {  totalPrice, totalItems } = useCart();
+  const { totalPrice, totalItems } = useCart();
   // const [promoCode, setPromoCode] = useState("");
   // const [discountRate, setDiscountRate] = useState(0);
 
