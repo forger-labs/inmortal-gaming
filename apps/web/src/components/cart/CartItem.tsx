@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 
 import { EASE_OUT_EXPO } from "@/constants";
+import { useCart } from "@/context/CartContext";
 
 interface CartItemProps {
   item: CartItemDetailDTO;
@@ -14,17 +15,22 @@ interface CartItemProps {
   onDecrement: () => void;
   onRemove: () => void;
   disabled?: boolean;
+  rate: number;
 }
 
 export function CartItem({
   item,
   onIncrement,
   onDecrement,
+  rate,
   onRemove,
   disabled = false,
 }: CartItemProps) {
+  const {  priceInBs } = useCart();
+
   const imageUrl = getR2ImageUrl(item.image);
   const lineTotal = (item.price || 0) * (item.quantity || 1);
+  const lineTotalFmt = priceInBs ? rate * lineTotal : lineTotal;
 
   return (
     <motion.article
@@ -83,7 +89,7 @@ export function CartItem({
             <p className="font-mono text-xs text-text-secondary">
               Precio unitario:{" "}
               <span className="font-semibold text-text-primary">
-                ${item.price.toFixed(2)} USD
+                ${priceInBs ? (item.price * rate).toFixed(2) : item.price.toFixed(2)} {priceInBs ? "VES" : "USD"}
               </span>
             </p>
           </div>
@@ -134,8 +140,9 @@ export function CartItem({
           {/* Subtotal line */}
           <div className="text-right">
             <span className="font-mono text-lg font-bold text-neon-primary tabular-nums">
-              ${lineTotal.toFixed(2)}{" "}
-              <span className="text-xs font-normal text-text-muted">USD</span>
+              {priceInBs ? "Bs. " : "$"}
+{lineTotalFmt.toFixed(2)}{" "}
+              <span className="text-xs font-normal text-text-muted">{priceInBs ? "VES" : "USD"}</span>
             </span>
           </div>
         </div>

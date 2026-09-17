@@ -1999,9 +1999,7 @@ export default class AdminApi {
         url: `/users/${userId}`,
       });
 
-      const { success, data, error } = response.data as ApiResponse<
-        UserEntity
-      >;
+      const { success, data, error } = response.data as ApiResponse<UserEntity>;
       if (!success || !data) {
         const errorMessage =
           typeof error === "string"

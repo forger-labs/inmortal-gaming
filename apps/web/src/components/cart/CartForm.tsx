@@ -183,7 +183,7 @@ export function CartForm() {
                 }`}
               >
                 <span className="font-display text-sm font-semibold">
-                  Binance Pay
+                  Binance
                 </span>
                 <span className="font-mono text-[10px] text-text-muted">
                   USDT Cripto

@@ -2,6 +2,7 @@
 
 import { WalletIcon } from "@shared/icons";
 import { motion } from "framer-motion";
+import { useMemo, useState } from "react";
 
 import { EASE_OUT_EXPO } from "@/constants";
 import { useCart } from "@/context/CartContext";
@@ -12,13 +13,16 @@ import { CartForm } from "./CartForm";
 //   COMBO15: 0.15,
 // };
 
-export function CartSummary() {
-  const { totalPrice, totalItems } = useCart();
+export function CartSummary({ rate }: { rate: number }) {
+  const { totalPrice, totalItems, priceInBs, setPriceInBs } = useCart();
   // const [promoCode, setPromoCode] = useState("");
   // const [discountRate, setDiscountRate] = useState(0);
 
   // const discount = totalPrice * discountRate;
-  const finalTotal = Math.max(0, totalPrice);
+  const finalTotal = useMemo(() => {
+    if (priceInBs) return rate * totalPrice;
+    return totalPrice;
+  }, [priceInBs, totalPrice, rate]);
 
   // const applyPromo = () => {
   //   const code = promoCode.trim().toUpperCase();
@@ -64,7 +68,11 @@ export function CartSummary() {
           <div className="flex justify-between text-text-secondary">
             <span>Subtotal</span>
             <span className="text-text-primary tabular-nums">
-              ${totalPrice.toFixed(2)} USD
+              {priceInBs ? "Bs. " : "$"}
+              {priceInBs
+                ? (rate * totalPrice).toFixed(2)
+                : totalPrice.toFixed(2)}{" "}
+              {priceInBs ? "VES" : "USD"}
             </span>
           </div>
 
@@ -94,14 +102,43 @@ export function CartSummary() {
               </div>
               <div className="text-right">
                 <span className="font-mono text-2xl font-black text-neon-primary tabular-nums shadow-neon-glow">
-                  ${finalTotal.toFixed(2)}
+                  {priceInBs ? "Bs. " : "$"}
+                  {finalTotal.toFixed(2)}
                 </span>
                 <span className="ml-1 font-mono text-xs text-text-muted">
-                  USD
+                  {priceInBs ? "VES" : "USD"}
                 </span>
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setPriceInBs(true)}
+            className={`flex flex-col items-center justify-center rounded-lg border p-3 text-center transition-all cursor-pointer ${
+              priceInBs
+                ? "border-neon-primary bg-neon-primary/15 shadow-[0_0_12px_rgba(0,240,255,0.25)] text-neon-primary font-bold"
+                : "border-white/10 bg-bg-surface text-text-secondary hover:border-white/20 hover:text-text-primary"
+            }`}
+          >
+            <span className="font-display text-sm font-semibold">
+              Bolivares
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPriceInBs(false)}
+            className={`flex flex-col items-center justify-center rounded-lg border p-3 text-center transition-all cursor-pointer ${
+              !priceInBs
+                ? "border-neon-amber bg-neon-amber/15 shadow-[0_0_12px_rgba(255,187,0,0.25)] text-neon-amber font-bold"
+                : "border-white/10 bg-bg-surface text-text-secondary hover:border-white/20 hover:text-text-primary"
+            }`}
+          >
+            <span className="font-display text-sm font-semibold">USD</span>
+          </button>
         </div>
 
         {/* Promo Code Input */}

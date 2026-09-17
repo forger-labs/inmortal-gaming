@@ -8,7 +8,12 @@ export const BUSINESS_WHATSAPP =
 
 export const ROUTES = {
   home: "/",
-  catalogo: "/catalogo",
+  catalog: "/catalog",
+  catalogCategory: (category: string | number) => `/catalog/${category}`,
+  catalogSubcategory: (
+    category: string | number,
+    subcategory: string | number,
+  ) => `/catalog/${category}/${subcategory}`,
   cart: "/cart",
   product: (id: string | number) => `/productos/${id}`,
   subproduct: (id: string | number) => `/subproductos/${id}`,

@@ -1,5 +1,14 @@
+import { BUSINESS_WHATSAPP } from "@/constants";
 import { WhatsAppIcon } from "@shared/icons";
 import Link from "next/link";
+
+const messageText = [
+  "*INMORTAL GAMING — SOPORTE*",
+  "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "Hola, quiero atencion personalizada para mi próxima compra"
+]
+  .filter(Boolean)
+  .join("\n");
 
 export function Footer() {
   return (
@@ -17,7 +26,7 @@ export function Footer() {
             </p>
           </div>
           <Link
-            href="https://wa.me/584161234567"
+            href={`https://wa.me/${BUSINESS_WHATSAPP}?text=${encodeURIComponent(messageText)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded bg-neon-green px-6 py-3 font-body text-sm font-semibold text-black transition-all duration-200 hover:bg-neon-green/90 hover:shadow-[0_0_20px] hover:shadow-neon-green/50"

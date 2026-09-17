@@ -9,7 +9,7 @@ import { useCart } from "@/context/CartContext";
 import { CartItem } from "./CartItem";
 import { CartSummary } from "./CartSummary";
 
-export function Cart() {
+export function Cart({rate}:{rate:number}) {
   const { items, loading, totalItems, updateQuantity, removeItem, clearCart } =
     useCart();
 
@@ -56,6 +56,7 @@ export function Cart() {
               <AnimatePresence mode="popLayout" initial={false}>
                 {items.map((item) => (
                   <CartItem
+                    rate={rate}
                     key={`${item.sub_product_id}-${item.item_price_id}-${item.id}`}
                     item={item}
                     onIncrement={() =>
@@ -107,7 +108,7 @@ export function Cart() {
             </div>
 
             {/* Summary Column */}
-            <CartSummary />
+            <CartSummary rate={rate} />
           </div>
         ) : (
           <motion.div

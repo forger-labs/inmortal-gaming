@@ -1,6 +1,7 @@
 export interface CategoryEntity {
   id: number;
   category_name: string;
+  slug?: string;
 }
 
 export interface CreateCategoryDTO {

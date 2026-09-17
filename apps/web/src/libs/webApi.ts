@@ -263,6 +263,266 @@ export default class WebApi {
   }
 
   /**
+   * Obtiene la lista paginada de categorias (`GET /categories`).
+   */
+  async getCategories(
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResult<CategoryEntity>> {
+    const result: ApiResponse<PaginatedResult<CategoryEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/categories?page=${page}&limit=${limit}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<CategoryEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener categorias";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene una categoria por su nombre o slug (`GET /categories/name/:name`).
+   */
+  async getCategoryByName(nameOrSlug: string): Promise<CategoryEntity> {
+    const result: ApiResponse<CategoryEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/categories/name/${encodeURIComponent(nameOrSlug)}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<CategoryEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener la categoria";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista paginada de subcategorias (`GET /subcategories`).
+   */
+  async getSubcategories(
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResult<SubcategoryEntity>> {
+    const result: ApiResponse<PaginatedResult<SubcategoryEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/subcategories?page=${page}&limit=${limit}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<SubcategoryEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener subcategorias";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene una subcategoria por su nombre o slug (`GET /subcategories/name/:name`).
+   */
+  async getSubcategoryByName(nameOrSlug: string): Promise<SubcategoryEntity> {
+    const result: ApiResponse<SubcategoryEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: `/subcategories/name/${encodeURIComponent(nameOrSlug)}`,
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<SubcategoryEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener la subcategoria";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista paginada de productos con filtros (`GET /products`).
+   */
+  async getProducts(
+    page = 1,
+    limit = 10,
+    filter?: {
+      name?: string;
+      categoryId?: number | string;
+      isActive?: boolean;
+    },
+  ): Promise<PaginatedResult<ProductEntity>> {
+    const result: ApiResponse<PaginatedResult<ProductEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const params = new URLSearchParams();
+      params.append("page", page.toString());
+      params.append("limit", limit.toString());
+      if (filter?.categoryId) {
+        params.append("category_id", filter.categoryId.toString());
+      }
+      if (filter?.name && filter.name.trim() !== "") {
+        params.append("name", filter.name.trim());
+      }
+      if (filter?.isActive !== undefined) {
+        params.append("is_active", filter.isActive.toString());
+      }
+
+      const response = await this.httpClient.get({
+        url: `/products?${params.toString()}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<ProductEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener productos";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la lista paginada de subproductos con filtros (`GET /subproducts`).
+   */
+  async getSubProducts(
+    page = 1,
+    limit = 10,
+    filter?: {
+      name?: string;
+      subcategoryId?: number | string;
+      productId?: number | string;
+      serverId?: number | string;
+      isActive?: boolean;
+      minPrice?: string | number;
+      maxPrice?: string | number;
+    },
+  ): Promise<PaginatedResult<SubProductEntity>> {
+    const result: ApiResponse<PaginatedResult<SubProductEntity>> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const params = new URLSearchParams();
+      params.append("page", page.toString());
+      params.append("limit", limit.toString());
+      if (filter?.subcategoryId) {
+        params.append("sub_category_id", filter.subcategoryId.toString());
+      }
+      if (filter?.productId) {
+        params.append("product_id", filter.productId.toString());
+      }
+      if (filter?.serverId) {
+        params.append("server_id", filter.serverId.toString());
+      }
+      if (filter?.name && filter.name.trim() !== "") {
+        params.append("name", filter.name.trim());
+      }
+      if (filter?.isActive !== undefined) {
+        params.append("is_active", filter.isActive.toString());
+      }
+      if (filter?.minPrice !== undefined && filter.minPrice !== "") {
+        params.append("min_price", filter.minPrice.toString());
+      }
+      if (filter?.maxPrice !== undefined && filter.maxPrice !== "") {
+        params.append("max_price", filter.maxPrice.toString());
+      }
+
+      const response = await this.httpClient.get({
+        url: `/subproducts?${params.toString()}`,
+      });
+
+      const { success, data, error } = response.data as ApiResponse<
+        PaginatedResult<SubProductEntity>
+      >;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al obtener subproductos";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
    * Obtiene una categoria por su ID (`GET /categories/:id`).
    */
   async getCategoryById(id: number | string): Promise<CategoryEntity> {

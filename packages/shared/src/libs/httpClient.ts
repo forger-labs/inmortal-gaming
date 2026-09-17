@@ -27,6 +27,9 @@ export class HttpClient implements HttpClientInterface {
    * @returns devuelve un accessToken usado para enviar al backend la autorizacion
    */
   getAuthorization() {
+    if (typeof window === "undefined" || typeof localStorage === "undefined") {
+      return { token: null };
+    }
     return {
       token: localStorage.getItem(this.localStorageKeys.accessToken),
     };
@@ -37,7 +40,7 @@ export class HttpClient implements HttpClientInterface {
    * FormData para que el navegador agregue el boundary multipart automáticamente.
    */
   private getDefaultHeaders(body?: unknown) {
-    if (body instanceof FormData) {
+    if (typeof FormData !== "undefined" && body instanceof FormData) {
       const { Accept, "Access-Control-Allow-Origin": origin } =
         this.default_headers;
       return { Accept, "Access-Control-Allow-Origin": origin };

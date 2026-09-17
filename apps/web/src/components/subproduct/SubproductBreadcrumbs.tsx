@@ -25,7 +25,7 @@ export function SubproductBreadcrumbs({
     >
       <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
         <Link
-          href={ROUTES.catalogo}
+          href={ROUTES.catalog}
           className="inline-flex items-center gap-1 text-neon-primary transition-colors hover:text-white"
         >
           <ChevronLeftIcon className="h-4 w-4" />

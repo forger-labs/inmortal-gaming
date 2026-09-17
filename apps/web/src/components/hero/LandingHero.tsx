@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants";
 import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
@@ -58,17 +59,17 @@ export function LandingHero() {
             className="rise-in flex flex-col gap-4 sm:flex-row"
           >
             <Link
-              href="/catalogo"
+              href={ROUTES.catalog}
               className="btn-neon-primary rounded px-8 py-3 text-sm font-semibold uppercase tracking-wider"
             >
               Explorar Catálogo
             </Link>
-            <Link
+            {/*<Link
               href="#ofertas"
               className="btn-neon rounded px-8 py-3 text-sm font-semibold uppercase tracking-wider"
             >
               Ver Ofertas
-            </Link>
+            </Link>*/}
           </div>
         </div>
       </div>

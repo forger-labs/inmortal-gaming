@@ -39,6 +39,7 @@ export type JsonShapeMap = Record<
 export interface SubcategoryEntity {
   id: number;
   subcategory_name: string;
+  slug?: string;
   category_id: number;
   json_shape: JsonShapeMap;
 }

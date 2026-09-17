@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { Cart } from "@/components/cart/Cart";
 import { NodeBackground } from "@/components/hero/NodeBackground";
+import { getBinanceRate } from "@/libs/getBinanceRate";
 
 export const metadata: Metadata = {
   title: "Carrito de Compras — Inmortal Gaming",
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
     "Revisa tus productos y completa tu orden con entrega inmediata por WhatsApp.",
 };
 
-export default function CartPage() {
+export default async function CartPage() {
+  const rate = await getBinanceRate()
+
   return (
     <main className="relative min-h-screen pt-20 pb-24 overflow-hidden">
       {/* Dynamic Cyberpunk Node Background */}
@@ -38,7 +41,7 @@ export default function CartPage() {
         </header>
 
         {/* Cart View Component */}
-        <Cart />
+        <Cart rate={rate ?? 0} />
       </div>
     </main>
   );

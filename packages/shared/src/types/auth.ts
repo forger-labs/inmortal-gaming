@@ -32,7 +32,7 @@ export interface UserEntity {
   email: string;
   username: string;
   role?: string;
-  phone_number?:string
+  phone_number?: string;
 }
 
 export interface UserMeDTO {

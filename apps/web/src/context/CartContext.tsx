@@ -11,7 +11,7 @@ import type {
   PaymentMethod,
 } from "@shared/types";
 import { normalizeVenezuelanPhone } from "@shared/utils";
-import type { ReactNode } from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
 import {
   createContext,
   useCallback,
@@ -56,6 +56,8 @@ export interface CartContextValue {
   clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
   createOrder: (payload: CreateOrderPayload) => Promise<OrderEntity>;
+  priceInBs: boolean,
+  setPriceInBs: Dispatch<SetStateAction<boolean>>
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -89,6 +91,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
   const [items, setItems] = useState<CartItemDetailDTO[]>([]);
   const [loading, setLoading] = useState(true);
+  const [priceInBs, setPriceInBs] = useState(false);
 
   // Carga y sincronizacion del carrito segun estado de autenticacion
   const refreshCart = useCallback(async () => {
@@ -342,8 +345,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       clearCart,
       refreshCart,
       createOrder,
+      priceInBs,
+      setPriceInBs
     }),
-    [
+    [priceInBs,
       items,
       totalItems,
       totalPrice,
