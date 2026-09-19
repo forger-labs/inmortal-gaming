@@ -44,7 +44,9 @@
             "groups": [
               [":BUN:", ":NODE:"],
               ":BLANK_LINE:",
-              [":PACKAGE:"],
+              [":PACKAGE:", "!@inmortal"],
+              ":BLANK_LINE:",
+              "@inmortal",
               ":BLANK_LINE:",
               [":ALIAS:", ":PATH:"]
             ]

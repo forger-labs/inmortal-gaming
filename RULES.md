@@ -8,13 +8,13 @@
 - **One file per component.** No file exports more than one component.
 - **CamelCase filenames** matching the default export (e.g., `Navbar.tsx` → `Navbar`).
 - **Types/interfaces** live in `src/types/`, imported as `@/types`.
-- **Icons** live in `src/components/icons/` — one file per icon, exported via barrel `index.ts`.
+- **Icons** live in `shared/src/icons/` — one file per icon, exported via barrel `index.ts`.
 - **Icon components** default to `aria-hidden="true"` and accept an optional `title` prop. When `title` is provided, set `role="img"` and render `<title>` inside the SVG.
 - **Relative imports** for sibling components (`./NodeBackground`). **Absolute `@/` imports** for cross-directory references (`@/components/icons`, `@/types`).
 - **No missing htmlFor attributes** on form labels. Always use `htmlFor` to associate labels with inputs.
 - **No missing alt attributes** on images. Always provide meaningful `alt` text for `<Image>` components.
 - **No recreate of components** that already exist. Reuse existing components instead of creating duplicates.
-- **Use sileo toasts** for notifications instead of `alert()` or `console.log()`.
+- **Use react-host-toast** for notifications instead of `alert()` or `console.log()`.
 - **No accent for text**. All text should be in neutral Spanish, avoiding regionalisms or slang.
 - **Use Yup for form validation**. All forms should use Yup for validation schemas.
 - **Use Formik for forms**. All forms should be built using Formik for state management and validation.
@@ -99,8 +99,9 @@ Substantial changes follow Spec-Driven Development:
 - Generative tools (`generate_screen_from_text`, `edit_screens`, `update_design_system`) require OAuth 2.0 — not available with API key alone.
 - DESIGN.md is the source of truth for visual design specs.
 
-<!-- CODEGRAPH_START -->
-## CodeGraph
+## Code exploration
+
+IT IS MANDATORY
 
 In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
 
@@ -108,9 +109,11 @@ In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the re
 - **Shell** (always works): `codegraph explore "<symbol names or question>"` prints the same output.
 
 If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
-<!-- CODEGRAPH_END -->
 
+- Use gentle-engram to read context of the repo
 
 ## Check code
-To check code always use: 
-- pnpm format && pnpm build
+
+After every finished task, run:
+1. pnpm format 
+2. pnpm build
