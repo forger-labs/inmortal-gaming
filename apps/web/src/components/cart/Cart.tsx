@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { CartItem } from "./CartItem";
 import { CartSummary } from "./CartSummary";
+import { ROUTES } from "@/constants";
 
 export function Cart({ rate }: { rate: number }) {
   const { items, loading, totalItems, updateQuantity, removeItem, clearCart } =
@@ -90,7 +91,7 @@ export function Cart({ rate }: { rate: number }) {
                 </button>
 
                 <Link
-                  href="/catalogo"
+                  href={ROUTES.catalog}
                   className="font-mono text-xs font-semibold uppercase tracking-wider text-text-secondary transition-colors hover:text-neon-primary"
                 >
                   + Seguir explorando catalogo
@@ -134,7 +135,7 @@ export function Cart({ rate }: { rate: number }) {
             </div>
 
             <Link
-              href="/catalogo"
+              href={ROUTES.catalog}
               className="btn-neon-primary mt-2 rounded-lg px-8 py-3.5 font-display text-sm font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all hover:scale-105"
             >
               Explorar catalogo
