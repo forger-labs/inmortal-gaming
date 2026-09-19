@@ -26,7 +26,7 @@ export interface AdminSession {
 interface CustomJwtClaims {
   id?: number;
   email?: string;
-  role?: string;
+  role?: string | number;
   exp?: number;
   iat?: number;
 }
@@ -100,9 +100,12 @@ export function AuthGuardProvider({ children }: { children: ReactNode }) {
       claims = null;
     }
 
-    const rawRole = claims?.role?.toUpperCase() ?? "ADMIN";
+    const rawRole = claims?.role;
     const role: AdminUserRole =
-      rawRole === "SUPERADMIN" || rawRole === "SUPER_ADMIN"
+      rawRole === "1" ||
+      rawRole === 1 ||
+      String(rawRole).toUpperCase() === "SUPERADMIN" ||
+      String(rawRole).toUpperCase() === "SUPER_ADMIN"
         ? "SUPER_ADMIN"
         : "ADMIN";
 

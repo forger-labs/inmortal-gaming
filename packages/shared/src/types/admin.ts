@@ -36,6 +36,11 @@ export interface AdminSalesBar {
 
 /* ─── Gestión de usuarios del panel ─── */
 
+export enum BackendAdminRole {
+  SUPER_ADMIN = 1,
+  ADMIN = 2,
+}
+
 export type AdminUserRole = "SUPER_ADMIN" | "ADMIN";
 
 export type AdminUserStatus = "active" | "inactive";
@@ -45,7 +50,7 @@ export interface AdminEntity {
   name: string;
   lastname: string;
   email: string;
-  role: AdminUserRole | string;
+  role: BackendAdminRole | number | string;
   created_at?: string;
   updated_at?: string;
 }
@@ -55,7 +60,7 @@ export interface CreateAdminDTO {
   lastname: string;
   email: string;
   password: string;
-  role: AdminUserRole | string;
+  role: BackendAdminRole | number;
 }
 
 export interface UpdateAdminDTO {
@@ -63,7 +68,7 @@ export interface UpdateAdminDTO {
   lastname?: string;
   email?: string;
   password?: string;
-  role?: AdminUserRole | string;
+  role?: BackendAdminRole | number;
 }
 
 export interface AdminUser {

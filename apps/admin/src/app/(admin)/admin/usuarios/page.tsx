@@ -7,6 +7,7 @@ import type {
   AdminUser,
   AdminUserFilters,
   AdminUserFormValues,
+  BackendAdminRole,
 } from "@shared/types";
 import { useCallback, useEffect, useState } from "react";
 
@@ -52,8 +53,10 @@ export default function AdminUsersPage() {
         lastname: admin.lastname,
         email: admin.email,
         role:
-          admin.role?.toUpperCase() === "SUPERADMIN" ||
-          admin.role?.toUpperCase() === "SUPER_ADMIN"
+          admin.role === 1 ||
+          admin.role === "1" ||
+          String(admin.role).toUpperCase() === "SUPERADMIN" ||
+          String(admin.role).toUpperCase() === "SUPER_ADMIN"
             ? ("SUPER_ADMIN" as const)
             : ("ADMIN" as const),
         created_at: admin.created_at,
@@ -110,6 +113,8 @@ export default function AdminUsersPage() {
   const handleSubmit = async (values: AdminUserFormValues) => {
     if (!modal.open) return;
 
+    const backendRole = values.role === "SUPER_ADMIN" ? 1 : 2;
+
     try {
       if (modal.mode === "create") {
         await adminApi.createAdmin({
@@ -117,7 +122,7 @@ export default function AdminUsersPage() {
           lastname: values.lastname.trim(),
           email: values.email.trim(),
           password: values.password || "",
-          role: values.role,
+          role: backendRole,
         });
 
         cyberSuccess(
@@ -129,7 +134,7 @@ export default function AdminUsersPage() {
           lastname: values.lastname.trim(),
           email: values.email.trim(),
           ...(values.password ? { password: values.password } : {}),
-          role: values.role,
+          role: backendRole,
         });
 
         cyberSuccess(
