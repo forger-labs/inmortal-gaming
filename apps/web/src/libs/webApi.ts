@@ -23,6 +23,7 @@ import type {
   RefreshTokenDTO,
   RegisterUserDTO,
   ServerEntity,
+  StoreStatusEntity,
   SubcategoryEntity,
   SubProductEntity,
   UpdateCartItemDTO,
@@ -83,7 +84,8 @@ export default class WebApi {
   async getProductItems(
     page = 1,
     limit = 10,
-    categoryId?: number | string,
+		categoryId?: number | string,
+    is_active?: boolean,
   ): Promise<PaginatedResult<ProductEntity>> {
     const result: ApiResponse<PaginatedResult<ProductEntity>> = {
       data: null,
@@ -95,8 +97,9 @@ export default class WebApi {
         categoryId !== undefined && categoryId !== 0 && categoryId !== "0"
           ? `&category_id=${categoryId}`
           : "";
-      const response = await this.httpClient.get({
-        url: `/products?page=${page}&limit=${limit}${categoryParam}`,
+      const isActiveParam = is_active !== undefined ? `&is_active=${is_active}` : "";
+			const response = await this.httpClient.get({
+        url: `/products?page=${page}&limit=${limit}${categoryParam}${isActiveParam}`,
       });
 
       const { success, data, error } = response.data as ApiResponse<
@@ -125,7 +128,8 @@ export default class WebApi {
     page = 1,
     limit = 10,
     subcategoryId?: number | string,
-    serverId?: number | string,
+		serverId?: number | string,
+    is_active?: boolean,
   ): Promise<PaginatedResult<SubProductEntity>> {
     const result: ApiResponse<PaginatedResult<SubProductEntity>> = {
       data: null,
@@ -143,8 +147,12 @@ export default class WebApi {
         serverId !== undefined && serverId !== 0 && serverId !== "0"
           ? `&server_id=${serverId}`
           : "";
-      const response = await this.httpClient.get({
-        url: `/subproducts?page=${page}&limit=${limit}${subcategoryParam}${serverParam}`,
+      const isActiveParam =
+        is_active !== undefined
+          ? `&is_active=${is_active}`
+          : "";
+			const response = await this.httpClient.get({
+        url: `/subproducts?page=${page}&limit=${limit}${subcategoryParam}${serverParam}${isActiveParam}`,
       });
 
       const { success, data, error } = response.data as ApiResponse<
@@ -1450,6 +1458,38 @@ export default class WebApi {
             ? error
             : (error as { message?: string })?.message ||
               "Error al obtener el precio del subproducto en el servidor";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene el estado actual de operatividad de la tienda (`GET /store-status`).
+   */
+  async getStoreStatus(): Promise<StoreStatusEntity> {
+    const result: ApiResponse<StoreStatusEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: "/store-status",
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<StoreStatusEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al consultar el estado de la tienda";
         throw new Error(errorMessage);
       }
 

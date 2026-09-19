@@ -57,7 +57,7 @@ export function ProductSlider({ item }: ProductSliderProps) {
         let itemsToDisplay: ProductDisplay[] = [];
 
         if (subcategoryId !== 0 && Number(subcategoryId) !== 0) {
-          const res = await webApi.getSubProductItems(1, limit, subcategoryId);
+          const res = await webApi.getSubProductItems(1, limit, subcategoryId, undefined, true);
           itemsToDisplay = res.items.map((subProduct, index) => {
             const rawPrice =
               typeof subProduct.price === "number"
@@ -81,7 +81,7 @@ export function ProductSlider({ item }: ProductSliderProps) {
             };
           });
         } else if (categoryId !== 0 && Number(categoryId) !== 0) {
-          const res = await webApi.getProductItems(1, limit, categoryId);
+          const res = await webApi.getProductItems(1, limit, categoryId, true);
           itemsToDisplay = res.items.map((prod, index) => ({
             id: String(prod.id),
             name: prod.name,

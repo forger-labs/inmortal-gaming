@@ -7,7 +7,6 @@ import { ProductSlider } from "@/components/catalog/ProductSlider";
 import { ProductSliderSkeleton } from "@/components/catalog/ProductSliderSkeleton";
 import { LandingHero } from "@/components/hero/LandingHero";
 import { NodeBackground } from "@/components/hero/NodeBackground";
-import { OffersSection } from "@/components/offers/OffersSection";
 import { webApi } from "@/libs/webApi";
 
 export default function Home() {

@@ -2,7 +2,7 @@
 
 import { WalletIcon } from "@shared/icons";
 import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { EASE_OUT_EXPO } from "@/constants";
 import { useCart } from "@/context/CartContext";

@@ -1,13 +1,12 @@
 import type { AdminUserRole } from "@shared/types";
 
-export function RoleBadge({ role }: { role: AdminUserRole | string }) {
-  const normalizedRole =
-    role?.toUpperCase() === "SUPERADMIN" ||
-    role?.toUpperCase() === "SUPER_ADMIN"
-      ? "SUPER_ADMIN"
-      : "ADMIN";
-
-  const isSuper = normalizedRole === "SUPER_ADMIN";
+export function RoleBadge({ role }: { role: AdminUserRole | number | string }) {
+  const isSuper =
+    role === 1 ||
+    role === "1" ||
+    role === "SUPER_ADMIN" ||
+    String(role).toUpperCase() === "SUPERADMIN" ||
+    String(role).toUpperCase() === "SUPER_ADMIN";
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 font-mono text-[11px] font-semibold uppercase tracking-wider ${

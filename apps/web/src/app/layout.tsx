@@ -5,6 +5,7 @@ import "./globals.css";
 
 import { Footer } from "@/components/footer/Footer";
 import { Navbar } from "@/components/navbar/Navbar";
+import StoreMaintenanceCartel from "@/components/StoreMaintenanceCartel";
 import WhatsAppFloat from "@/components/WhatsappFloat";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
@@ -54,6 +55,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col antialiased bg-bg-primary text-text-primary font-body">
         <AuthProvider>
           <CartProvider>
+            <StoreMaintenanceCartel />
             <Navbar />
 
             {children}

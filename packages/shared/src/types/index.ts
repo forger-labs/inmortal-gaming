@@ -8,6 +8,7 @@ export * from "./landing";
 export * from "./order";
 export * from "./product";
 export * from "./server";
+export * from "./store";
 export * from "./subcategory";
 export * from "./subproduct";
 export * from "./toast";
