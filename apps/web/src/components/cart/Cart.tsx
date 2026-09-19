@@ -5,10 +5,10 @@ import { cyberInfo } from "@shared/toasts";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import Link from "next/link";
 
+import { ROUTES } from "@/constants";
 import { useCart } from "@/context/CartContext";
 import { CartItem } from "./CartItem";
 import { CartSummary } from "./CartSummary";
-import { ROUTES } from "@/constants";
 
 export function Cart({ rate }: { rate: number }) {
   const { items, loading, totalItems, updateQuantity, removeItem, clearCart } =

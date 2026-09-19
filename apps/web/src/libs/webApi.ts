@@ -23,6 +23,7 @@ import type {
   RefreshTokenDTO,
   RegisterUserDTO,
   ServerEntity,
+  StoreStatusEntity,
   SubcategoryEntity,
   SubProductEntity,
   UpdateCartItemDTO,
@@ -1457,6 +1458,38 @@ export default class WebApi {
             ? error
             : (error as { message?: string })?.message ||
               "Error al obtener el precio del subproducto en el servidor";
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      handleApiError(error, result);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene el estado actual de operatividad de la tienda (`GET /store-status`).
+   */
+  async getStoreStatus(): Promise<StoreStatusEntity> {
+    const result: ApiResponse<StoreStatusEntity> = {
+      data: null,
+      success: false,
+      error: null,
+    };
+    try {
+      const response = await this.httpClient.get({
+        url: "/store-status",
+      });
+
+      const { success, data, error } =
+        response.data as ApiResponse<StoreStatusEntity>;
+      if (!success || !data) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : (error as { message?: string })?.message ||
+              "Error al consultar el estado de la tienda";
         throw new Error(errorMessage);
       }
 

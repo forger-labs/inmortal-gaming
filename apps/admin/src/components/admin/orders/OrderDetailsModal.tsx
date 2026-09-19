@@ -2,12 +2,9 @@
 
 import {
   CloseIcon,
-  EmailIcon,
   OrdersIcon,
   ProductsIcon,
   ShieldCheckIcon,
-  UserIcon,
-  WalletIcon,
 } from "@shared/icons";
 import { cyberError, cyberSuccess } from "@shared/toasts";
 import type {

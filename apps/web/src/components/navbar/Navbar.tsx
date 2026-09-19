@@ -68,7 +68,7 @@ export function Navbar() {
     async function loadNavigationData() {
       try {
         // 1. Fetch first 3 categories
-        const catRes = await webApi.getCategories(1, 3);
+        const catRes = await webApi.getCategories(1, 5);
         if (!isMounted || !catRes.items) return;
         const topCategories = catRes.items;
         setCategories(topCategories);
