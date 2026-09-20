@@ -47,7 +47,7 @@ export default function Home() {
       <LandingHero />
 
       {/* Catalog band */}
-      <div className="relative mx-auto w-full max-w-7xl space-y-20 px-6 pb-12 pt-12 md:px-12 md:pt-12 md:pb-12">
+      <div className="relative mx-auto w-full max-w-7xl space-y-20 px-6 pb-16 pt-10 md:px-12 md:pt-10 md:pb-14">
         {loading ? (
           <>
             <ProductSliderSkeleton />
