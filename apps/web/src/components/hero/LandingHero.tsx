@@ -26,7 +26,7 @@ export function LandingHero() {
       </div>
 
       {/* Content */}
-      <div className="relative mx-auto w-full max-w-7xl px-6 py-24 md:px-12 md:py-28">
+      <div className="relative mx-auto w-full max-w-7xl px-6 pt-24 pb-18 md:px-12 md:pt-28 md:pb-20">
         <div className="flex max-w-3xl flex-col items-start gap-6">
           {/* Kicker */}
           <span
