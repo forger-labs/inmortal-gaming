@@ -156,12 +156,7 @@ export function Navbar() {
 
           {/* Desktop nav links */}
           <div className="hidden items-center gap-5 lg:gap-7 md:flex">
-            <Link
-              href={ROUTES.catalog}
-              className="font-body text-sm font-semibold text-text-secondary transition-colors hover:text-neon-primary"
-            >
-              Catálogo
-            </Link>
+
 
             {/* Dynamic first 3 categories with Mega-Dropdown */}
             {categories.map((category) => {
@@ -242,6 +237,13 @@ export function Navbar() {
             >
               <SearchIcon className="h-5 w-5" />
             </button>
+
+            <Link
+              href={ROUTES.catalog}
+              className="font-body text-sm font-semibold text-text-secondary transition-colors hover:text-neon-primary"
+            >
+              Catálogo
+            </Link>
 
             {/* Cart */}
             <Link
