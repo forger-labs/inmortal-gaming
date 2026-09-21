@@ -51,7 +51,7 @@ export function ProductCard({ product, itemType }: ProductCardProps) {
   return (
     <Link
       href={href}
-      className="group flex cursor-pointer flex-col overflow-hidden rounded-lg border-l border-neon-primary bg-bg-surface shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] transition-all duration-200 hover:-translate-y-0.5"
+      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-lg border-l border-neon-primary bg-bg-surface shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] transition-all duration-200 hover:-translate-y-0.5"
     >
       {/* Image */}
       <div className="relative h-48 w-full overflow-hidden bg-bg-surface-hover">
@@ -90,11 +90,6 @@ export function ProductCard({ product, itemType }: ProductCardProps) {
         <h4 className="mb-2 font-display text-base font-semibold text-text-primary transition-colors group-hover:text-neon-primary">
           {product.name}
         </h4>
-
-        {/* Description */}
-        <p className="mb-4 flex-grow font-body text-sm leading-relaxed text-text-secondary line-clamp-2">
-          {product.description}
-        </p>
 
         {/* Bottom: price + cart */}
         <div className="mt-auto flex items-center justify-between border-t border-border-subtle pt-4">
