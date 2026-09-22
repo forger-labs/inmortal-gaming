@@ -101,6 +101,10 @@ export function ProductCard({ product, itemType }: ProductCardProps) {
           >
             <CartIcon className="h-5 w-5" />
           </button>
+
+          <span className="font-display text-lg font-semibold text-text-primary transition-colors group-hover:text-neon-primary">
+            $ {product.price}
+          </span>
         </div>
       </div>
     </Link>
