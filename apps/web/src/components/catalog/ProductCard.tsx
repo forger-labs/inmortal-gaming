@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { ROUTES } from "@/constants";
 import type { ProductDisplay } from "@/types";
+import { useRouter } from "next/navigation";
 
 const STOCK_STYLES: Record<
   ProductDisplay["stockStatus"],
@@ -37,7 +38,8 @@ interface ProductCardProps {
 
 export function ProductCard({ product, itemType }: ProductCardProps) {
   const stock = STOCK_STYLES[product.stockStatus];
-  const categoryColor = CATEGORY_COLORS[product.categoryColor];
+  const categoryColor = CATEGORY_COLORS[product.categoryColor]
+  const router = useRouter()
 
   const isSubproduct =
     itemType === "subproduct" ||
@@ -95,12 +97,16 @@ export function ProductCard({ product, itemType }: ProductCardProps) {
         <div className="mt-auto flex items-center justify-between border-t border-border-subtle pt-4">
           <button
             type="button"
-            onClick={(e) => e.preventDefault()}
+            onClick={() => router.push(href)}
             className="rounded-sm border border-neon-primary p-2 text-neon-primary transition-colors hover:bg-neon-primary/10"
             aria-label={`Add ${product.name} to cart`}
           >
             <CartIcon className="h-5 w-5" />
           </button>
+
+          <span className="font-display text-lg font-semibold text-text-primary transition-colors group-hover:text-neon-primary">
+            $ {product.price}
+          </span>
         </div>
       </div>
     </Link>
