@@ -10,7 +10,7 @@ import { CatalogHubView } from "@/components/catalog/CatalogHubView";
 import { webApi } from "@/libs/webApi";
 
 export const metadata: Metadata = {
-  title: "Catálogo de Categorías | Inmortal Gaming",
+  title: "Catálogo de Categorías",
   description:
     "Explora todas las categorías, juegos, monedas virtuales, cuentas y servicios disponibles en Inmortal Gaming.",
 };

@@ -5,9 +5,13 @@ import { NodeBackground } from "@/components/hero/NodeBackground";
 import { getBinanceRate } from "@/libs/getBinanceRate";
 
 export const metadata: Metadata = {
-  title: "Carrito de Compras — Inmortal Gaming",
+  title: "Carrito de Compras",
   description:
     "Revisa tus productos y completa tu orden con entrega inmediata por WhatsApp.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function CartPage() {

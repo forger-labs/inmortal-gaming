@@ -33,7 +33,7 @@ export async function generateMetadata({
 
     if (subcategory) {
       return {
-        title: `${subcategory.subcategory_name} | Catálogo Inmortal Gaming`,
+        title: `${subcategory.subcategory_name} — Catálogo`,
         description: `Explora todos los ítems, monedas, cuentas y subproductos disponibles en ${subcategory.subcategory_name}.`,
       };
     }
@@ -42,7 +42,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `Catálogo de Subcategoría | Inmortal Gaming`,
+    title: "Catálogo de Subcategoría",
   };
 }
 

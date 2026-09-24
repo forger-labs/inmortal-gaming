@@ -28,7 +28,7 @@ export async function generateMetadata({
 
     if (category) {
       return {
-        title: `${category.category_name} | Catálogo Inmortal Gaming`,
+        title: `${category.category_name} — Catálogo`,
         description: `Explora todos los productos, cuentas, monedas y servicios disponibles para ${category.category_name}.`,
       };
     }
@@ -37,7 +37,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `Catálogo de Categoría | Inmortal Gaming`,
+    title: "Catálogo de Categoría",
   };
 }
 

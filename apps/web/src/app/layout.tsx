@@ -28,17 +28,46 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://inmortalgaming.com";
+
 export const metadata: Metadata = {
-  title: "Inmortal Gaming — Bienes Digitales",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Inmortal Gaming — Bienes Digitales",
+    template: "%s | Inmortal Gaming",
+  },
   description:
     "Monedas virtuales, gift cards, ítems de videojuegos y servicios digitales. Paga vía WhatsApp, recibe al instante.",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
-    title: "Inmortal Gaming",
+    title: "Inmortal Gaming — Bienes Digitales",
     description:
       "Bienes digitales para tu juego — monedas, gift cards, ítems y servicios.",
     siteName: "Inmortal Gaming",
     locale: "es_VE",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Inmortal Gaming — Bienes Digitales",
+    description:
+      "Bienes digitales para tu juego — monedas, gift cards, ítems y servicios.",
+  },
+  verification: {
+    google:
+      process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+      "zz1ByuEpfPq2PMDnz33zgsPK4f3UWP6kbKWzfuwp6oE",
   },
 };
 
