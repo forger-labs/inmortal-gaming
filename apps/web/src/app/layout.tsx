@@ -29,7 +29,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://inmortalgaming.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.inmortalgaming.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

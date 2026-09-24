@@ -5,7 +5,7 @@ export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://inmortalgaming.com";
+    process.env.NEXT_PUBLIC_SITE_URL || "https://www.inmortalgaming.com";
 
   // Rutas estáticas principales
   const staticRoutes: MetadataRoute.Sitemap = [
