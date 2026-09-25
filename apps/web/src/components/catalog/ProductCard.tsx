@@ -1,10 +1,10 @@
 import { CartIcon } from "@shared/icons";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { ROUTES } from "@/constants";
 import type { ProductDisplay } from "@/types";
-import { useRouter } from "next/navigation";
 
 const STOCK_STYLES: Record<
   ProductDisplay["stockStatus"],
@@ -94,20 +94,23 @@ export function ProductCard({ product, itemType }: ProductCardProps) {
         </h4>
 
         {/* Bottom: price + cart */}
-        <div className="mt-auto flex items-center justify-between border-t border-border-subtle pt-4">
-          <button
-            type="button"
-            onClick={() => router.push(href)}
-            className="rounded-sm border border-neon-primary p-2 text-neon-primary transition-colors hover:bg-neon-primary/10"
-            aria-label={`Add ${product.name} to cart`}
-          >
-            <CartIcon className="h-5 w-5" />
-          </button>
+        {
+          isSubproduct &&   <div className="mt-auto flex items-center justify-between border-t border-border-subtle pt-4">
+            <button
+              type="button"
+              onClick={() => router.push(href)}
+              className="rounded-sm border border-neon-primary p-2 text-neon-primary transition-colors hover:bg-neon-primary/10"
+              aria-label={`Add ${product.name} to cart`}
+            >
+              <CartIcon className="h-5 w-5" />
+            </button>
 
-          <span className="font-display text-lg font-semibold text-text-primary transition-colors group-hover:text-neon-primary">
-            $ {product.price}
-          </span>
-        </div>
+            <span className="font-display text-lg font-semibold text-text-primary transition-colors group-hover:text-neon-primary">
+              $ {product.price}
+            </span>
+          </div>
+        }
+
       </div>
     </Link>
   );
